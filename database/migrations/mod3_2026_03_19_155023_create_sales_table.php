@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('appointments', function (Blueprint $table) {
+        Schema::create('sales', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('service_id')->constrained()->cascadeOnDelete();
-            $table->dateTime('appointment_date');
-            $table->enum('status', ['pending', 'completed', 'cancelled']);
-            $table->string('notes');
+            $table->foreignId('appointment_id')->constrained()->cascadeOnDelete()->nullable();
+            $table->foreignId('tax_document_id')->constrained()->cascadeOnDelete()->nullable();
+            $table->float('total');
+            $table->enum('payment_method', ['Efectivo', 'Transferencia', 'Tarjeta']);
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('appointments');
+        Schema::dropIfExists('sales');
     }
 };

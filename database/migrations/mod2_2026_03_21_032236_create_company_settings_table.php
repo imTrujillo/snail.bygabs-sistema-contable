@@ -11,11 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sales', function (Blueprint $table) {
+        Schema::create('company_settings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('appointment_id')->constrained()->cascadeOnDelete();
-            $table->enum('payment_method', ['cash', 'transfer']);
+            $table->string('name');
+            $table->string('nrc');
+            $table->string('nit');
+            $table->string('address');
+            $table->enum('tax_regime', ['Consumidor Final', 'Contribuyente']);
+            $table->string('logo');
             $table->timestamps();
         });
     }
@@ -25,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sales');
+        Schema::dropIfExists('company_settings');
     }
 };

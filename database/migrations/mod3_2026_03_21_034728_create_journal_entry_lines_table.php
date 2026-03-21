@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('accounting_entries', function (Blueprint $table) {
+        Schema::create('journal_entry_lines', function (Blueprint $table) {
             $table->id();
-            $table->enum('type', ['revenue', 'expense']);
-            $table->string('descriptioin');
-            $table->float('amount');
+            $table->foreignId('journal_entry_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('account_id')->constrained()->cascadeOnDelete();
+            $table->float('debit');
+            $table->float('credit');
+            $table->string('description');
             $table->timestamps();
         });
     }
@@ -25,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('accounting_entries');
+        Schema::dropIfExists('journal_entry_lines');
     }
 };
