@@ -1,4 +1,3 @@
-{{-- resources/views/filament/pages/reports/estado-resultados.blade.php --}}
 <x-filament-panels::page>
     @php $company = \App\Models\CompanySetting::current(); @endphp
 

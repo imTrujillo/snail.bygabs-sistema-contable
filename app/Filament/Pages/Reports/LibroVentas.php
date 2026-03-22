@@ -43,7 +43,7 @@ class LibroVentas extends Page implements HasForms
 
         $period = FiscalPeriod::find($this->fiscal_period_id);
 
-        return TaxDocument::with('client')
+        return TaxDocument::with('customer')
             ->whereIn('type', ['FCF', 'CCF'])
             ->whereBetween('issue_date', [$period->start_date, $period->end_date])
             ->where('is_voided', false)

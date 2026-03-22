@@ -22,7 +22,12 @@ class ExpenseForm
                     ->numeric(),
                 DateTimePicker::make('expense_date')
                     ->required(),
-                TextInput::make('paid_with')
+                Select::make('paid_with')
+                    ->options([
+                        'Efectivo'      => 'Efectivo',
+                        'Transferencia' => 'Transferencia',
+                        'Tarjeta'       => 'Tarjeta',
+                    ])
                     ->required(),
                 Select::make('account_id')
                     ->relationship('account', 'name')

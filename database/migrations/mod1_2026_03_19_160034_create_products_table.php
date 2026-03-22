@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('unit');
             $table->string('name');
-            $table->integer('stock');
-            $table->float('cost_price');
-            $table->float('sale_price');
+            $table->integer('stock')->default(0);
+            $table->float('cost_price')->default(0);
+            $table->float('sale_price')->default(0);
             $table->timestamps();
         });
     }

@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('description');
-            $table->float('price');
-            $table->float('duration_minutes');
+            $table->float('price')->default(0);
+            $table->float('duration_minutes')->default(0);
             $table->timestamps();
         });
     }

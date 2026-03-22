@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('account_id')->constrained()->cascadeOnDelete();
             $table->foreignId('fiscal_period_id')->constrained()->cascadeOnDelete();
-            $table->float('opening_balance');
-            $table->float('total_debit');
-            $table->float('total_credit');
-            $table->float('closing_balance');
+            $table->float('opening_balance')->default(0);
+            $table->float('total_debit')->default(0);
+            $table->float('total_credit')->default(0);
+            $table->float('closing_balance')->default(0);
             $table->timestamps();
         });
     }

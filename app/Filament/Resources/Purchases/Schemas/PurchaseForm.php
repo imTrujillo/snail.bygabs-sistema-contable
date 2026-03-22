@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Purchases\Schemas;
 
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -16,10 +17,7 @@ class PurchaseForm
                 Select::make('supplier_id')
                     ->relationship('supplier', 'name')
                     ->required(),
-                Select::make('tax_document_id')
-                    ->relationship('taxDocument', 'id')
-                    ->required(),
-                DateTimePicker::make('purchase_date')
+                DatePicker::make('purchase_date')
                     ->required(),
                 TextInput::make('exempt_amount')
                     ->required()
@@ -40,6 +38,19 @@ class PurchaseForm
                     ->relationship('account', 'name')
                     ->required(),
                 TextInput::make('notes')
+                    ->required(),
+
+
+                TextInput::make('document_number')   // ← ej: "CCF-001234"
+                    ->label('Número de documento')
+                    ->required(),
+
+                Select::make('document_type')
+                    ->label('Tipo de documento')
+                    ->options([
+                        'CCF'  => 'Crédito Fiscal (CCF)',
+                        'FCF'  => 'Factura Consumidor Final'
+                    ])
                     ->required(),
             ]);
     }

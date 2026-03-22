@@ -22,13 +22,13 @@ return new class extends Migration
             $table->foreignId('supplier_id')->nullable()->constrained()->nullOnDelete();
             $table->integer('reference_id');
             $table->enum('reference_type', ['sale', 'purchase']);
-            $table->float('exempt_amount');
-            $table->float('non_taxable_amount');
-            $table->float('taxable_amount');
-            $table->float('iva_amount');
-            $table->float('total_amount');
-            $table->boolean('is_voided');
-            $table->dateTime('voided_at');
+            $table->float('exempt_amount')->default(0);
+            $table->float('non_taxable_amount')->default(0);
+            $table->float('taxable_amount')->default(0);
+            $table->float('iva_amount')->default(0);
+            $table->float('total_amount')->default(0);
+            $table->boolean('is_voided')->nullable();
+            $table->dateTime('voided_at')->nullable();
             $table->timestamps();
         });
     }

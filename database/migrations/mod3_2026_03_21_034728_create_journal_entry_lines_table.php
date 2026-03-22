@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('journal_entry_id')->constrained()->cascadeOnDelete();
             $table->foreignId('account_id')->constrained()->cascadeOnDelete();
-            $table->float('debit');
-            $table->float('credit');
+            $table->float('debit')->default(0);
+            $table->float('credit')->default(0);
             $table->string('description');
             $table->timestamps();
         });

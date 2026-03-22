@@ -32,7 +32,7 @@ class JournalEntry extends Model
         return $this->belongsTo(FiscalPeriod::class);
     }
 
-    public function createdBy(): BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

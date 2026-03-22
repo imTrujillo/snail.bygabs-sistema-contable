@@ -18,9 +18,12 @@ class SaleForm
                 Select::make('appointment_id')
                     ->relationship('appointment', 'id')
                     ->default(null),
-                Select::make('tax_document_id')
-                    ->relationship('taxDocument', 'id')
-                    ->default(null),
+                Select::make('document_type')
+                    ->options([
+                        'FCF' => 'Consumidor Final (FCF)',
+                        'CCF' => 'Crédito Fiscal (CCF)',
+                    ])
+                    ->required(),
                 TextInput::make('total')
                     ->required()
                     ->numeric(),
