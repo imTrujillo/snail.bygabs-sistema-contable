@@ -1,0 +1,51 @@
+<?php
+
+namespace App\Filament\Resources\FiscalPeriods;
+
+use App\Filament\Resources\FiscalPeriods\Pages\CreateFiscalPeriod;
+use App\Filament\Resources\FiscalPeriods\Pages\EditFiscalPeriod;
+use App\Filament\Resources\FiscalPeriods\Pages\ListFiscalPeriods;
+use App\Filament\Resources\FiscalPeriods\Schemas\FiscalPeriodForm;
+use App\Filament\Resources\FiscalPeriods\Tables\FiscalPeriodsTable;
+use App\Models\FiscalPeriod;
+use BackedEnum;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables\Table;
+use UnitEnum;
+
+class FiscalPeriodResource extends Resource
+{
+    protected static ?string $model = FiscalPeriod::class;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Fiscal';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-calendar';
+
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function form(Schema $schema): Schema
+    {
+        return FiscalPeriodForm::configure($schema);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return FiscalPeriodsTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListFiscalPeriods::route('/'),
+            'create' => CreateFiscalPeriod::route('/create'),
+            'edit' => EditFiscalPeriod::route('/{record}/edit'),
+        ];
+    }
+}

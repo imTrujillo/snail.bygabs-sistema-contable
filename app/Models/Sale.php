@@ -15,17 +15,17 @@ class Sale extends Model
         'total' => 'decimal:2',
     ];
 
-    protected function appointment(): BelongsTo
+    public function appointment(): BelongsTo
     {
         return $this->belongsTo(Appointment::class);
     }
 
-    protected function customer(): BelongsTo
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
-    protected function taxDocument(): BelongsTo
+    public function taxDocument(): BelongsTo
     {
         return $this->belongsTo(TaxDocument::class);
     }

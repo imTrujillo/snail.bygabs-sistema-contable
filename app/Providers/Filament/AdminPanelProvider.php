@@ -58,6 +58,13 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->navigationGroups([
+                'Operativo',
+                'Fiscal',
+                'Contabilidad',
+                'Reportes',
+                'Configuración'
+            ])
             ->plugins([
                 BriskTheme::make(),
                 AuthUIEnhancerPlugin::make(),
