@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('appointment_id')->constrained()->cascadeOnDelete()->nullable();
-            $table->foreignId('tax_document_id')->constrained()->cascadeOnDelete()->nullable();
+            $table->foreignId('appointment_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('tax_document_id')->nullable()->constrained()->nullOnDelete();
             $table->float('total');
             $table->enum('payment_method', ['Efectivo', 'Transferencia', 'Tarjeta']);
             $table->timestamps();

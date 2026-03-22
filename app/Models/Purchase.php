@@ -1,0 +1,58 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+
+class Purchase extends Model
+{
+    protected $fillable = [
+        'supplier_id',
+        'tax_document_id',
+        'purchase_date',
+        'exempt_amount',
+        'non_taxable_amount',
+        'taxable_amount',
+        'credit_fiscal',
+        'total_amount',
+        'account_id',
+        'notes',
+    ];
+
+    protected $casts = [
+        'purchase_date'      => 'date',
+        'exempt_amount'      => 'decimal:2',
+        'non_taxable_amount' => 'decimal:2',
+        'taxable_amount'     => 'decimal:2',
+        'credit_fiscal'      => 'decimal:2',
+        'total_amount'       => 'decimal:2',
+    ];
+
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
+    }
+
+    public function taxDocument(): BelongsTo
+    {
+        return $this->belongsTo(TaxDocument::class);
+    }
+
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(Account::class);
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(PurchaseItem::class);
+    }
+
+    public function journalEntry(): MorphOne
+    {
+        return $this->morphOne(JournalEntry::class, 'reference');
+    }
+}

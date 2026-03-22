@@ -18,8 +18,8 @@ return new class extends Migration
             $table->integer('correlative_number');
             $table->string('document_number');
             $table->string('issue_date');
-            $table->foreignId('customer_id')->constrained()->cascadeOnDelete()->nullable();
-            $table->foreignId('supplier_id')->constrained()->cascadeOnDelete()->nullable();
+            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('supplier_id')->nullable()->constrained()->nullOnDelete();
             $table->integer('reference_id');
             $table->enum('reference_type', ['sale', 'purchase']);
             $table->float('exempt_amount');

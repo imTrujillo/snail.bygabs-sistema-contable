@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('category');
             $table->float('amount');
             $table->dateTime('expense_date');
+            $table->string('paid_with');
+            $table->foreignId('account_id')->constrained()->cascadeOnDelete();
+            $table->string('notes');
             $table->timestamps();
         });
     }
