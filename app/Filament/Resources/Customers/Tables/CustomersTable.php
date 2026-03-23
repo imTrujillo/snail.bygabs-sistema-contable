@@ -2,10 +2,14 @@
 
 namespace App\Filament\Resources\Customers\Tables;
 
+use App\Filament\Exports\CustomerExporter;
+use App\Filament\Imports\CustomerImporter;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ExportAction;
+use Filament\Actions\ImportAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -16,6 +20,14 @@ class CustomersTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->headerActions([
+                ImportAction::make()
+                    ->importer(CustomerImporter::class)
+                    ->label('Importar'),
+                ExportAction::make()
+                    ->exporter(CustomerExporter::class)
+                    ->label('Exportar'),
+            ])
             ->columns([
                 TextColumn::make('name')
                     ->label('Cliente')

@@ -17,7 +17,7 @@ class Supplier extends Model
 
     public function purchases(): HasMany
     {
-        return $this->hasMany(PurchaseItem::class);
+        return $this->hasMany(Purchase::class);
     }
 
     public function taxDocuments(): HasMany

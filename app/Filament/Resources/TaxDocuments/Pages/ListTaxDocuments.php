@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\TaxDocuments\Pages;
 
 use App\Filament\Resources\TaxDocuments\TaxDocumentResource;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListTaxDocuments extends ListRecords
@@ -12,8 +11,6 @@ class ListTaxDocuments extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            CreateAction::make(),
-        ];
+        return [];
     }
 }

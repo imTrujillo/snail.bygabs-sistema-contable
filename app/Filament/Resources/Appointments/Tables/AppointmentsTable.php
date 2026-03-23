@@ -27,10 +27,10 @@ class AppointmentsTable
             ->headerActions([
                 ImportAction::make()
                     ->importer(AppointmentImporter::class)
-                    ->label('Importar Citas'),
+                    ->label('Importar'),
                 ExportAction::make()
                     ->exporter(AppointmentExporter::class)
-                    ->label('Exportar Citas'),
+                    ->label('Exportar'),
             ])
             ->columns([
                 TextColumn::make('customer.name')
