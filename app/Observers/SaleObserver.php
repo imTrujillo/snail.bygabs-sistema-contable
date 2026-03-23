@@ -6,7 +6,7 @@ use App\Models\Account;
 use App\Models\FiscalPeriod;
 use App\Models\JournalEntry;
 use App\Models\Sale;
-use App\Models\TaxDocument;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 
 use function Symfony\Component\Clock\now;
@@ -74,6 +74,17 @@ class SaleObserver
                 'credit'      => $ivaAmount,
                 'description' => 'IVA débito fiscal',
             ]);
+        }
+
+        $recipient = Auth::user();
+        if ($recipient) {
+            $docNumber = $sale->taxDocument?->document_number ?? 'S/N';
+
+            Notification::make()
+                ->title('Venta registrada')
+                ->body("Documento **{$docNumber}** por \${$sale->total} — Pago: *{$sale->payment_method}*.")
+                ->success()
+                ->sendToDatabase($recipient);
         }
     }
 }

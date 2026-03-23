@@ -30,7 +30,7 @@ class Appointment extends Model
 
     public function services(): BelongsToMany
     {
-        return $this->belongsToMany(Service::class)
+        return $this->belongsToMany(Service::class, 'appointment_services')
             ->withPivot('price')
             ->withTimestamps();
     }

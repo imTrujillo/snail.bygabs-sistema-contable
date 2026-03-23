@@ -16,29 +16,61 @@ class AccountsTable
         return $table
             ->columns([
                 TextColumn::make('code')
-                    ->searchable(),
+                    ->label('Código')
+                    ->searchable()
+                    ->sortable()
+                    ->width('100px'),
+
                 TextColumn::make('name')
+                    ->label('Nombre')
                     ->searchable(),
-                TextColumn::make('type'),
-                TextColumn::make('subtype'),
-                TextColumn::make('account_id')
-                    ->numeric()
-                    ->sortable(),
+
+                TextColumn::make('type')
+                    ->label('Tipo')
+                    ->badge()
+                    ->color(fn(string $state) => match ($state) {
+                        'Activo'     => 'success',
+                        'Pasivo'     => 'danger',
+                        'Patrimonio' => 'warning',
+                        'Ingreso'    => 'info',
+                        'Costo'      => 'gray',
+                        'Gasto'      => 'gray',
+                        default      => 'gray',
+                    }),
+
+                TextColumn::make('subtype')
+                    ->label('Subtipo')
+                    ->badge()
+                    ->color('gray'),
+
+                TextColumn::make('parent.name')
+                    ->label('Cuenta padre')
+                    ->placeholder('— Raíz —')
+                    ->searchable(),
+
                 IconColumn::make('is_group')
-                    ->boolean(),
+                    ->label('Es grupo')
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 IconColumn::make('is_default')
-                    ->boolean(),
+                    ->label('Por defecto')
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('code')
+            ->modifyQueryUsing(fn($query) => $query->where('is_group', false))
             ->filters([
-                //
+                \Filament\Tables\Filters\TernaryFilter::make('is_group')
+                    ->label('Mostrar grupos')
+                    ->placeholder('Sin grupos')
+                    ->trueLabel('Solo grupos')
+                    ->falseLabel('Sin grupos'),
             ])
             ->recordActions([
                 EditAction::make(),

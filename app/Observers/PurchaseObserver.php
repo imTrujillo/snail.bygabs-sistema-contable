@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\FiscalPeriod;
 use App\Models\JournalEntry;
 use App\Models\Purchase;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 
 use function Symfony\Component\Clock\now;
@@ -66,5 +67,17 @@ class PurchaseObserver
             'credit'      => $purchase->total_amount,
             'description' => 'Deuda con proveedor',
         ]);
+
+        $recipient = Auth::user();
+        if ($recipient) {
+            $docNumber  = $purchase->taxDocument?->document_number ?? 'S/N';
+            $proveedor  = $purchase->supplier?->name ?? 'Sin proveedor';
+
+            Notification::make()
+                ->title('Compra registrada')
+                ->body("**{$docNumber}** de *{$proveedor}* por \${$purchase->total_amount}. Crédito fiscal: \${$purchase->credit_fiscal}.")
+                ->success()
+                ->sendToDatabase($recipient);
+        }
     }
 }

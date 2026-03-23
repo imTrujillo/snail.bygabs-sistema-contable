@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Expense;
 use App\Models\FiscalPeriod;
 use App\Models\JournalEntry;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 
 class ExpenseObserver
@@ -54,5 +55,14 @@ class ExpenseObserver
             'credit'      => $expense->amount,
             'description' => 'Pago de gasto',
         ]);
+
+        $recipient = Auth::user();
+        if ($recipient) {
+            Notification::make()
+                ->title('Gasto registrado')
+                ->body("**{$expense->description}** por \${$expense->amount} — Pagado con: *{$expense->paid_with}*.")
+                ->warning()
+                ->sendToDatabase($recipient);
+        }
     }
 }

@@ -25,12 +25,12 @@ class Account extends Model
 
     public function parent(): BelongsTo
     {
-        return $this->belongsTo(Account::class);
+        return $this->belongsTo(Account::class, 'account_id');
     }
 
     public function children(): HasMany
     {
-        return $this->hasMany(Account::class);
+        return $this->hasMany(Account::class, 'account_id');
     }
 
     // Contabilidad

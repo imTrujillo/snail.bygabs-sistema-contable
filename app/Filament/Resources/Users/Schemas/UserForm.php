@@ -23,7 +23,6 @@ class UserForm
                 Select::make('role')
                     ->options(UserRole::class)
                     ->required(),
-                DateTimePicker::make('email_verified_at'),
                 TextInput::make('password')
                     ->password()
                     ->required(),
