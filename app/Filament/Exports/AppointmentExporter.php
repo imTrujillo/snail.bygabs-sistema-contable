@@ -17,13 +17,31 @@ class AppointmentExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label('ID'),
-            ExportColumn::make('customer.name'),
-            ExportColumn::make('user.name'),
-            ExportColumn::make('appointment_date'),
-            ExportColumn::make('status'),
-            ExportColumn::make('notes'),
-            ExportColumn::make('created_at'),
-            ExportColumn::make('updated_at'),
+
+            ExportColumn::make('customer.name')
+                ->label('Cliente'),
+
+            ExportColumn::make('user.name')
+                ->label('Responsable'),
+
+            ExportColumn::make('appointment_date')
+                ->label('Fecha')
+                ->getStateUsing(fn($record) => $record->appointment_date?->format('d/m/Y H:i')),
+
+            ExportColumn::make('status')
+                ->label('Estado')
+                ->getStateUsing(fn($record) => $record->status?->value ?? ''),
+
+            ExportColumn::make('notes')
+                ->label('Notas'),
+
+            ExportColumn::make('created_at')
+                ->label('Creado')
+                ->getStateUsing(fn($record) => $record->created_at?->format('d/m/Y')),
+
+            ExportColumn::make('updated_at')
+                ->label('Actualizado')
+                ->getStateUsing(fn($record) => $record->updated_at?->format('d/m/Y')),
         ];
     }
 

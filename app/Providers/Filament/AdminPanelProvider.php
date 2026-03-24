@@ -2,8 +2,14 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\AppointmentWidget;
+use App\Filament\Widgets\CalendarWidget;
+use App\Filament\Widgets\InvoiceWidget;
+use App\Filament\Widgets\SaleWidget;
+use App\Filament\Widgets\StatsOverviewWidget;
 use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 use Filafly\Themes\Brisk\BriskTheme;
+use Filament\FontProviders\GoogleFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -11,15 +17,13 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Guava\Calendar\CalendarPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Kenepa\TranslationManager\TranslationManagerPlugin;
 
@@ -33,17 +37,27 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => '#473919',
+                'gray' => '#F5EFDB',
             ])
+            ->font('Cinzel', provider: GoogleFontProvider::class)
+            ->brandLogo('/logo.jpeg')
+            ->brandLogoHeight('3rem')
+            ->brandName('caracol studio')
+            ->favicon('/logo.jpeg')
+            ->darkMode(false)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Dashboard::class,
+                Dashboard::class
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+                StatsOverviewWidget::class,
+                InvoiceWidget::class,
+                AppointmentWidget::class,
+                SaleWidget::class,
+                CalendarWidget::class
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -73,6 +87,61 @@ class AdminPanelProvider extends PanelProvider
                 TranslationManagerPlugin::make()->quickTranslateNavigationRegistration(false),
                 CalendarPlugin::make()
             ])
+            ->renderHook(
+                'panels::body.start',
+                fn() => request()->routeIs('filament.admin.auth.login') ? new HtmlString('
+                    <div id="caracol-branding-left">
+                        <img src="/logo.jpeg" alt="Caracol Studio Logo">
+                    </div>
+                    <style>
+                        /* Ocultar logos por defecto de Laravel en Login */
+                        .fi-simple-layout img[alt*="Laravel"], .fi-logo { display: none !important; }
+
+                        #caracol-branding-left {
+                            position: fixed;
+                            left: 0;
+                            top: 0;
+                            width: 50%;
+                            height: 100vh;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            z-index: 50;
+                            pointer-events: none;
+                        }
+
+                        #caracol-branding-left img {
+                            width: 380px; /* Tamaño profesional */
+                            height: auto;
+                            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+                            opacity: 0.95;
+                        }
+
+                        .caracol-auth-header {
+                            width: 100%;
+                            text-align: center;
+                            margin-bottom: 2rem;
+                        }
+
+                        .caracol-auth-header h1 {
+                            font-family: "Cinzel", serif;
+                            font-size: 3rem;
+                            color: #473919;
+                            font-weight: bold;
+                            text-transform: lowercase;
+                            letter-spacing: 2px;
+                        }
+                    </style>
+                ') : null
+            )
+            ->renderHook(
+                'panels::auth.login.form.before',
+                fn() => new HtmlString('
+                    <div class="caracol-auth-header">
+                        <h1>caracol studio</h1>
+                    </div>
+                ')
+            )
             ->viteTheme('resources/css/filament/admin/theme.css');
     }
 }

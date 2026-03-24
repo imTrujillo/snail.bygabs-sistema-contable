@@ -13,8 +13,25 @@ return [
     |
     */
 
-    'failed' => 'These credentials do not match our records.',
-    'password' => 'The provided password is incorrect.',
-    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'failed'    => 'These credentials do not match our records.',
+    'password'  => 'The provided password is incorrect.',
+    'throttle'  => 'Too many login attempts. Please try again in :seconds seconds.',
+
+    'login'     => 'Log In',
+    'register'  => 'Register',
+    'logout'    => 'Log Out',
+
+    'reset'     => 'Your password has been reset.',
+    'sent'      => 'We have emailed your password reset link.',
+    'throttled' => 'Please wait before retrying.',
+    'token'     => 'This password reset token is invalid.',
+    'user'      => 'We can\'t find a user with that email address.',
+
+    'attributes' => [
+        'email'    => 'e-mail address',
+        'password' => 'password',
+        'name'     => 'full name',
+        'phone'    => 'phone number',
+    ],
 
 ];

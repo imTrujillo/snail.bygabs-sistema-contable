@@ -13,8 +13,25 @@ return [
     |
     */
 
-    'failed' => 'These credentials do not match our records.',
-    'password' => 'The provided password is incorrect.',
-    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    'failed'    => 'Estas credenciales no coinciden con nuestros registros.',
+    'password'  => 'La contraseña proporcionada es incorrecta.',
+    'throttle'  => 'Demasiados intentos de acceso. Por favor, inténtelo de nuevo en :seconds segundos.',
+
+    'login'     => 'Iniciar Sesión',
+    'register'  => 'Registrarse',
+    'logout'    => 'Cerrar Sesión',
+
+    'reset'     => 'Su contraseña ha sido restablecida.',
+    'sent'      => 'Le hemos enviado por correo el enlace para restablecer su contraseña.',
+    'throttled' => 'Por favor, espere antes de intentar de nuevo.',
+    'token'     => 'Este token de restablecimiento de contraseña es inválido.',
+    'user'      => 'No podemos encontrar un usuario con esa dirección de correo electrónico.',
+
+    'attributes' => [
+        'email'    => 'correo electrónico',
+        'password' => 'contraseña',
+        'name'     => 'nombre completo',
+        'phone'    => 'número de teléfono',
+    ],
 
 ];
