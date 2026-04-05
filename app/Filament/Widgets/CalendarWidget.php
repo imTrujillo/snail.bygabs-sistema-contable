@@ -4,14 +4,10 @@ namespace App\Filament\Widgets;
 
 use App\Models\Appointment;
 use Carbon\Carbon;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Guava\Calendar\Enums\CalendarViewType;
-use Guava\Calendar\Filament\Actions\CreateAction;
 use Guava\Calendar\Filament\CalendarWidget as FilamentCalendarWidget;
 use Guava\Calendar\ValueObjects\CalendarEvent;
-use Guava\Calendar\ValueObjects\FetchInfo;          // ← nuevo import
+use Guava\Calendar\ValueObjects\FetchInfo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\HtmlString;
@@ -56,49 +52,5 @@ class CalendarWidget extends FilamentCalendarWidget
                         'services' => $appointment->services->pluck('name')->join(', '),
                     ]);
             });
-    }
-
-    // ─── ACCIÓN CREAR ────────────────────────────────────────
-    public function createAppointmentAction(): CreateAction
-    {
-        return CreateAction::make('createAppointment')
-            ->model(Appointment::class)
-            ->label('Nueva Cita')
-            ->form([
-                Select::make('customer_id')
-                    ->relationship('customer', 'name')
-                    ->label('Cliente')
-                    ->searchable()
-                    ->required(),
-
-                Select::make('user_id')
-                    ->relationship('user', 'name')
-                    ->label('Técnica')
-                    ->required(),
-
-                Select::make('services')
-                    ->relationship('services', 'name')
-                    ->label('Servicios')
-                    ->multiple()
-                    ->required(),
-
-                DateTimePicker::make('appointment_date')
-                    ->label('Fecha y hora')
-                    ->required(),
-
-                Select::make('status')
-                    ->label('Estado')
-                    ->options([
-                        'pendiente'  => 'Pendiente',
-                        'completada' => 'Completada',
-                        'cancelada'  => 'Cancelada',
-                    ])
-                    ->default('pendiente')
-                    ->required(),
-
-                Textarea::make('notes')
-                    ->label('Notas')
-                    ->nullable(),
-            ]);
     }
 }

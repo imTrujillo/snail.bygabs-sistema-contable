@@ -2,6 +2,10 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Customer;
+use App\Models\Sale;
+use App\Models\TaxDocument;
+use App\Models\Appointment;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -11,38 +15,71 @@ class StatsOverviewWidget extends BaseWidget
 
     protected function getStats(): array
     {
-        // Reemplaza estos valores con tus consultas reales a la base de datos
-        // Ejemplo: $clientes = \App\Models\Cliente::count();
+        $clientes = Customer::count();
 
-        $clientes   = 120;
-        $facturas   = 340;
-        $ingresos   = 8500;
-        $citas      = 45;
+        $facturas = TaxDocument::count();
+
+        $ingresos = Sale::sum('total');
+
+        $citas = Appointment::count();
+
+        // Sparklines: últimas 6 semanas
+        $ventasSemanas = collect(range(5, 0))->map(
+            fn($i) =>
+            Sale::whereBetween('created_at', [
+                now()->subWeeks($i + 1)->startOfWeek(),
+                now()->subWeeks($i)->endOfWeek(),
+            ])->sum('total')
+        )->toArray();
+
+        $facturasSemanas = collect(range(5, 0))->map(
+            fn($i) =>
+            TaxDocument::whereBetween('created_at', [
+                now()->subWeeks($i + 1)->startOfWeek(),
+                now()->subWeeks($i)->endOfWeek(),
+            ])->count()
+        )->toArray();
+
+        $clientesSemanas = collect(range(5, 0))->map(
+            fn($i) =>
+            Customer::whereBetween('created_at', [
+                now()->subWeeks($i + 1)->startOfWeek(),
+                now()->subWeeks($i)->endOfWeek(),
+            ])->count()
+        )->toArray();
+
+        $citasSemanas = collect(range(5, 0))->map(
+            fn($i) =>
+            Appointment::whereBetween('created_at', [
+                now()->subWeeks($i + 1)->startOfWeek(),
+                now()->subWeeks($i)->endOfWeek(),
+            ])->count()
+        )->toArray();
 
         return [
             Stat::make('Clientes', $clientes)
                 ->description('Total de clientes registrados')
                 ->descriptionIcon('heroicon-m-users')
                 ->color('primary')
-                ->chart([65, 78, 90, 100, 110, 120]),
+                ->chart($clientesSemanas),
 
             Stat::make('Facturas', $facturas)
                 ->description('Total de facturas emitidas')
                 ->descriptionIcon('heroicon-m-document-text')
                 ->color('success')
-                ->chart([120, 180, 200, 260, 300, 340]),
+                ->chart($facturasSemanas),
 
             Stat::make('Ingresos', '$' . number_format($ingresos, 2))
-                ->description('Ingresos totales del período')
+                ->description('Ingresos totales')
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->color('warning')
-                ->chart([1000, 1500, 1200, 2000, 1800, 2500]),
+                ->chart($ventasSemanas),
 
             Stat::make('Citas', $citas)
                 ->description('Citas agendadas')
                 ->descriptionIcon('heroicon-m-calendar-days')
                 ->color('info')
-                ->chart([5, 12, 20, 30, 38, 45]),
+                ->chart($citasSemanas),
         ];
     }
 }

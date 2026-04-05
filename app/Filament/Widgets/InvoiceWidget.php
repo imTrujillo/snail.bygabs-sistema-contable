@@ -2,32 +2,38 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\TaxDocument;
 use Filament\Widgets\ChartWidget;
 
 class InvoiceWidget extends ChartWidget
 {
-    protected  ?string $heading = 'Facturas por Mes';
+    protected ?string $heading = 'Documentos Fiscales por Mes';
     protected static ?int $sort = 3;
-    protected  ?string $maxHeight = '300px';
+    protected ?string $maxHeight = '300px';
 
     protected function getData(): array
     {
-        // Reemplaza con tu lógica real, por ejemplo:
-        // $datos = \App\Models\Factura::selectRaw('MONTH(created_at) as mes, COUNT(*) as total')
-        //     ->whereYear('created_at', now()->year)
-        //     ->groupBy('mes')->pluck('total')->toArray();
+        $meses = collect(range(1, 12));
+
+        $documentos = TaxDocument::selectRaw('MONTH(created_at) as mes, COUNT(*) as total')
+            ->whereYear('created_at', now()->year)
+            ->groupBy('mes')
+            ->pluck('total', 'mes');
+
+        $data   = $meses->map(fn($m) => $documentos->get($m, 0))->toArray();
+        $labels = $meses->map(fn($m) => now()->month($m)->locale('es')->isoFormat('MMM'))->toArray();
 
         return [
             'datasets' => [
                 [
-                    'label'           => 'Facturas por mes',
-                    'data'            => [12, 19, 10, 25, 30, 40],
+                    'label'           => 'Documentos fiscales',
+                    'data'            => $data,
                     'backgroundColor' => 'rgba(59, 130, 246, 0.5)',
                     'borderColor'     => 'rgb(59, 130, 246)',
                     'borderWidth'     => 2,
                 ],
             ],
-            'labels' => ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+            'labels' => $labels,
         ];
     }
 
