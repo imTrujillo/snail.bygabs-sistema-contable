@@ -3,12 +3,14 @@
 namespace App\Filament\Imports;
 
 use App\Models\Appointment;
+use App\Models\AppointmentStatus;
 use App\Models\Customer;
 use App\Models\User;
 use Carbon\Carbon;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Number;
 
 class AppointmentImporter extends Importer
@@ -22,19 +24,26 @@ class AppointmentImporter extends Importer
                 ->label('Cliente')
                 ->example('Mark Patel')
                 ->requiredMapping()
-                ->rules(['required']),
+                ->rules(['required'])
+                ->fillRecordUsing(fn() => null),
 
             ImportColumn::make('user')
                 ->label('Responsable')
                 ->example('Administrador')
                 ->requiredMapping()
-                ->rules(['required']),
+                ->rules(['required'])
+                ->fillRecordUsing(fn() => null),
 
             ImportColumn::make('appointment_date')
                 ->label('Fecha')
                 ->example('23/03/2026 16:27')
                 ->requiredMapping()
-                ->rules(['required', 'datetime']),
+                ->rules(['required'])
+                ->castStateUsing(function (string $state): ?string {
+                    if (blank($state)) return null;
+                    return Carbon::createFromFormat('d/m/Y H:i', $state)
+                        ->format('Y-m-d H:i:s');
+                }),
 
             ImportColumn::make('status')
                 ->label('Estado')
@@ -51,20 +60,14 @@ class AppointmentImporter extends Importer
 
     public function resolveRecord(): Appointment
     {
-        $data = $this->data;
-
-        $customer = Customer::where('name', $data['customer'])->first();
-        $user = User::where('name', $data['user'])->first();
-
-        // Parsear fecha d/m/Y H:i antes de asignar al modelo
-        $date = Carbon::createFromFormat('d/m/Y H:i', $data['appointment_date']);
+        $customer = Customer::where('name', $this->data['customer'])->first();
+        $user = User::where('name', $this->data['user'])->first();
 
         $appointment = new Appointment();
         $appointment->customer_id      = $customer?->id;
         $appointment->user_id          = $user?->id;
-        $appointment->appointment_date = $date; // ← Carbon object, no string
-        $appointment->status           = $data['status'];
-        $appointment->notes            = $data['notes'] ?? null;
+        $appointment->status           = $appointment->status = $this->data['status'];
+        $appointment->notes            = $this->data['notes'] ?? null;
 
         return $appointment;
     }

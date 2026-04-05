@@ -53,7 +53,6 @@ class ServiceForm
                             ->required()
                             ->numeric()
                             ->minValue(1)
-                            ->step(5)
                             ->suffix('min')
                             ->helperText(
                                 fn($state): string =>

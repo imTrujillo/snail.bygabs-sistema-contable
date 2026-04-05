@@ -148,10 +148,6 @@ class TaxDocumentsTable
             ])
 
             ->headerActions([
-                ImportAction::make()
-                    ->importer(TaxDocumentImporter::class)
-                    ->label('Importar'),
-
                 ExportAction::make()
                     ->exporter(TaxDocumentExporter::class)
                     ->label('Exportar'),

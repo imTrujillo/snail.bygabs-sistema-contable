@@ -23,10 +23,12 @@ class CalendarWidget extends FilamentCalendarWidget
     protected \Carbon\WeekDay $firstDay           = \Carbon\WeekDay::Monday;
     protected string|HtmlString|null|bool $heading = 'Calendario de Citas';
 
+    protected static ?int $sort = 5;
+
     // ─── EVENTOS ────────────────────────────────────────────
-    protected function getEvents(FetchInfo $info): Collection|array|Builder  // ← firma correcta
+    protected function getEvents(FetchInfo $info): Collection|array|Builder
     {
-        return Appointment::with(['customer', 'services'])  // ← customer, no customer
+        return Appointment::with(['customer', 'services'])
             ->whereDate('appointment_date', '>=', $info->start)
             ->whereDate('appointment_date', '<=', $info->end)
             ->get()
@@ -40,7 +42,7 @@ class CalendarWidget extends FilamentCalendarWidget
                 };
 
                 return CalendarEvent::make($appointment)
-                    ->title($appointment->customer->name)   // ← customer
+                    ->title($appointment->customer->name)
                     ->start($appointment->appointment_date)
                     ->end(
                         Carbon::parse($appointment->appointment_date)
@@ -63,8 +65,8 @@ class CalendarWidget extends FilamentCalendarWidget
             ->model(Appointment::class)
             ->label('Nueva Cita')
             ->form([
-                Select::make('customer_id')               // ← customer_id
-                    ->relationship('customer', 'name')    // ← customer
+                Select::make('customer_id')
+                    ->relationship('customer', 'name')
                     ->label('Cliente')
                     ->searchable()
                     ->required(),

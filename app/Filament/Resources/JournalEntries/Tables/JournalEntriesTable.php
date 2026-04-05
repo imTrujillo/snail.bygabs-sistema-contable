@@ -86,10 +86,6 @@ class JournalEntriesTable
             ->defaultSort('entry_date', 'desc')
 
             ->headerActions([
-                ImportAction::make()
-                    ->importer(JournalEntryImporter::class)
-                    ->label('Importar'),
-
                 ExportAction::make()
                     ->exporter(JournalEntryExporter::class)
                     ->label('Exportar'),

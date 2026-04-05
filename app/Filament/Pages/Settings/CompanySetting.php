@@ -24,57 +24,58 @@ class CompanySetting extends Page implements HasForms
 
     protected string $view = 'filament.pages.settings.company-setting';
 
-    public ?string $name       = null;
-    public ?string $nrc        = null;
-    public ?string $nit        = null;
-    public ?string $address    = null;
-    public ?string $tax_regime = null;
-    public array $logo       = [];
+    public ?array $data = [];
 
     public function mount(): void
     {
         $company = ModelsCompanySetting::current();
 
-        $this->fill([
+        $this->form->fill([
             'name'       => $company->name,
             'nrc'        => $company->nrc,
             'nit'        => $company->nit,
             'address'    => $company->address,
             'tax_regime' => $company->tax_regime,
-            'logo'       => $company->logo ? [$company->logo] : [],
+            'logo'       => ($company->logo && $company->logo !== 'i')
+                ? [$company->logo]
+                : [],
         ]);
     }
 
     public function form(Schema $form): Schema
     {
-        return $form->schema([
-            TextInput::make('name')->label('Nombre de la empresa')->required(),
-            TextInput::make('nrc')->label('N.R.C.'),
-            TextInput::make('nit')->label('N.I.T.'),
-            TextInput::make('address')->label('Dirección'),
-            Select::make('tax_regime')
-                ->label('Régimen fiscal')
-                ->options([
-                    'consumidor_final' => 'Consumidor Final',
-                    'contribuyente'    => 'Contribuyente',
-                ]),
-            FileUpload::make('logo')
-                ->label('Logo')
-                ->image()
-                ->disk('public')
-                ->directory('/')
-                ->visibility('public'),
-        ])->columns(2);
+        return $form
+            ->statePath('data')
+            ->schema([
+                TextInput::make('name')->label('Nombre de la empresa')->required(),
+                TextInput::make('nrc')->label('N.R.C.'),
+                TextInput::make('nit')->label('N.I.T.'),
+                TextInput::make('address')->label('Dirección'),
+                Select::make('tax_regime')
+                    ->label('Régimen fiscal')
+                    ->options([
+                        'Consumidor Final' => 'Consumidor Final',
+                        'Contribuyente'    => 'Contribuyente',
+                    ]),
+                FileUpload::make('logo')
+                    ->label('Logo')
+                    ->image()
+                    ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/jpg', 'image/webp'])
+                    ->disk('public')
+                    ->directory('logos')
+                    ->visibility('public'),
+            ])->columns(2);
     }
 
     public function save(): void
     {
         $company = ModelsCompanySetting::current();
-
         $data = $this->form->getState();
 
-        // FileUpload devuelve array, guardamos solo el primer elemento
-        $data['logo'] = $data['logo'][0] ?? null;
+        $logo = $data['logo'] ?? null;
+        $data['logo'] = is_array($logo)
+            ? (collect($logo)->first() ?? $company->logo)
+            : ($logo ?: $company->logo);
 
         $company->update($data);
 

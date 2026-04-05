@@ -7,8 +7,7 @@ use App\Filament\Widgets\CalendarWidget;
 use App\Filament\Widgets\InvoiceWidget;
 use App\Filament\Widgets\SaleWidget;
 use App\Filament\Widgets\StatsOverviewWidget;
-use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
-use Filafly\Themes\Brisk\BriskTheme;
+use App\Models\CompanySetting;
 use Filament\FontProviders\GoogleFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -17,7 +16,6 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Guava\Calendar\CalendarPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -41,10 +39,14 @@ class AdminPanelProvider extends PanelProvider
                 'gray' => '#F5EFDB',
             ])
             ->font('Cinzel', provider: GoogleFontProvider::class)
-            ->brandLogo('/logo.jpeg')
+            ->brandLogo(fn() => CompanySetting::current()?->logo
+                ? asset('storage/' . CompanySetting::current()->logo)
+                : '/logo.jpeg')
+            ->favicon(fn() => CompanySetting::current()?->logo
+                ? asset('storage/' . CompanySetting::current()->logo)
+                : '/logo.jpeg')
             ->brandLogoHeight('3rem')
-            ->brandName('caracol studio')
-            ->favicon('/logo.jpeg')
+            ->brandName(fn() => CompanySetting::current()?->name ?? config('app.name'))
             ->darkMode(false)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -82,10 +84,7 @@ class AdminPanelProvider extends PanelProvider
                 'Configuración'
             ])
             ->plugins([
-                BriskTheme::make(),
-                AuthUIEnhancerPlugin::make(),
                 TranslationManagerPlugin::make()->quickTranslateNavigationRegistration(false),
-                CalendarPlugin::make()
             ])
             ->renderHook(
                 'panels::body.start',

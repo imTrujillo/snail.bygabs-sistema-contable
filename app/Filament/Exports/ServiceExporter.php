@@ -15,25 +15,24 @@ class ServiceExporter extends Exporter
     public static function getColumns(): array
     {
         return [
-            ExportColumn::make('id')
-                ->label('ID'),
-            ExportColumn::make('name'),
-            ExportColumn::make('description'),
-            ExportColumn::make('price'),
-            ExportColumn::make('duration_minutes'),
-            ExportColumn::make('created_at'),
-            ExportColumn::make('updated_at'),
+            ExportColumn::make('id')->label('ID'),
+            ExportColumn::make('name')->label('Nombre'),
+            ExportColumn::make('description')->label('Descripción'),
+            ExportColumn::make('price')->label('Precio'),
+            ExportColumn::make('duration_minutes')->label('Duración (min)'),
+            ExportColumn::make('created_at')->label('Creado')
+                ->getStateUsing(fn($record) => $record->created_at?->format('d/m/Y')),
+            ExportColumn::make('updated_at')->label('Actualizado')
+                ->getStateUsing(fn($record) => $record->updated_at?->format('d/m/Y')),
         ];
     }
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Your service export has completed and ' . Number::format($export->successful_rows) . ' ' . str('row')->plural($export->successful_rows) . ' exported.';
-
+        $body = 'La exportación de servicios completó con ' . Number::format($export->successful_rows) . ' filas exportadas.';
         if ($failedRowsCount = $export->getFailedRowsCount()) {
-            $body .= ' ' . Number::format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' failed to export.';
+            $body .= ' ' . Number::format($failedRowsCount) . ' filas fallaron.';
         }
-
         return $body;
     }
 }

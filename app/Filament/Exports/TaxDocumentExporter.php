@@ -15,37 +15,39 @@ class TaxDocumentExporter extends Exporter
     public static function getColumns(): array
     {
         return [
-            ExportColumn::make('id')
-                ->label('ID'),
-            ExportColumn::make('type'),
-            ExportColumn::make('series'),
-            ExportColumn::make('correlative_number'),
-            ExportColumn::make('document_number'),
-            ExportColumn::make('issue_date'),
-            ExportColumn::make('customer.name'),
-            ExportColumn::make('supplier.name'),
-            ExportColumn::make('reference_id'),
-            ExportColumn::make('reference_type'),
-            ExportColumn::make('exempt_amount'),
-            ExportColumn::make('non_taxable_amount'),
-            ExportColumn::make('taxable_amount'),
-            ExportColumn::make('iva_amount'),
-            ExportColumn::make('total_amount'),
-            ExportColumn::make('is_voided'),
-            ExportColumn::make('voided_at'),
-            ExportColumn::make('created_at'),
-            ExportColumn::make('updated_at'),
+            ExportColumn::make('id')->label('ID'),
+            ExportColumn::make('type')->label('Tipo'),
+            ExportColumn::make('series')->label('Serie'),
+            ExportColumn::make('correlative_number')->label('Correlativo'),
+            ExportColumn::make('document_number')->label('Número Documento'),
+            ExportColumn::make('issue_date')->label('Fecha Emisión')
+                ->getStateUsing(fn($record) => $record->issue_date?->format('d/m/Y')),
+            ExportColumn::make('customer.name')->label('Cliente'),
+            ExportColumn::make('supplier.name')->label('Proveedor'),
+            ExportColumn::make('reference_id')->label('ID Referencia'),
+            ExportColumn::make('reference_type')->label('Tipo Referencia'),
+            ExportColumn::make('exempt_amount')->label('Monto Exento'),
+            ExportColumn::make('non_taxable_amount')->label('Monto No Gravado'),
+            ExportColumn::make('taxable_amount')->label('Monto Gravado'),
+            ExportColumn::make('iva_amount')->label('IVA'),
+            ExportColumn::make('total_amount')->label('Total'),
+            ExportColumn::make('is_voided')->label('Anulado')
+                ->getStateUsing(fn($record) => $record->is_voided ? 'Sí' : 'No'),
+            ExportColumn::make('voided_at')->label('Fecha Anulación')
+                ->getStateUsing(fn($record) => $record->voided_at?->format('d/m/Y')),
+            ExportColumn::make('created_at')->label('Creado')
+                ->getStateUsing(fn($record) => $record->created_at?->format('d/m/Y')),
+            ExportColumn::make('updated_at')->label('Actualizado')
+                ->getStateUsing(fn($record) => $record->updated_at?->format('d/m/Y')),
         ];
     }
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Your tax document export has completed and ' . Number::format($export->successful_rows) . ' ' . str('row')->plural($export->successful_rows) . ' exported.';
-
+        $body = 'La exportación de documentos fiscales completó con ' . Number::format($export->successful_rows) . ' filas exportadas.';
         if ($failedRowsCount = $export->getFailedRowsCount()) {
-            $body .= ' ' . Number::format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' failed to export.';
+            $body .= ' ' . Number::format($failedRowsCount) . ' filas fallaron.';
         }
-
         return $body;
     }
 }

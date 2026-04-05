@@ -15,27 +15,27 @@ class JournalEntryExporter extends Exporter
     public static function getColumns(): array
     {
         return [
-            ExportColumn::make('id')
-                ->label('ID'),
-            ExportColumn::make('entry_date'),
-            ExportColumn::make('description'),
-            ExportColumn::make('fiscalPeriod.name'),
-            ExportColumn::make('user.name'),
-            ExportColumn::make('reference_id'),
-            ExportColumn::make('reference_type'),
-            ExportColumn::make('created_at'),
-            ExportColumn::make('updated_at'),
+            ExportColumn::make('id')->label('ID'),
+            ExportColumn::make('entry_date')->label('Fecha')
+                ->getStateUsing(fn($record) => $record->entry_date?->format('d/m/Y')),
+            ExportColumn::make('description')->label('Descripción'),
+            ExportColumn::make('fiscalPeriod.name')->label('Período Fiscal'),
+            ExportColumn::make('user.name')->label('Usuario'),
+            ExportColumn::make('reference_id')->label('ID Referencia'),
+            ExportColumn::make('reference_type')->label('Tipo Referencia'),
+            ExportColumn::make('created_at')->label('Creado')
+                ->getStateUsing(fn($record) => $record->created_at?->format('d/m/Y')),
+            ExportColumn::make('updated_at')->label('Actualizado')
+                ->getStateUsing(fn($record) => $record->updated_at?->format('d/m/Y')),
         ];
     }
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Your journal entry export has completed and ' . Number::format($export->successful_rows) . ' ' . str('row')->plural($export->successful_rows) . ' exported.';
-
+        $body = 'La exportación de asientos contables completó con ' . Number::format($export->successful_rows) . ' filas exportadas.';
         if ($failedRowsCount = $export->getFailedRowsCount()) {
-            $body .= ' ' . Number::format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' failed to export.';
+            $body .= ' ' . Number::format($failedRowsCount) . ' filas fallaron.';
         }
-
         return $body;
     }
 }

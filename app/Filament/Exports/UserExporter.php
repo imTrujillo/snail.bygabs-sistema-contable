@@ -2,24 +2,23 @@
 
 namespace App\Filament\Exports;
 
-use App\Models\Customer;
+use App\Models\User;
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
 use Illuminate\Support\Number;
 
-class CustomerExporter extends Exporter
+class UserExporter extends Exporter
 {
-    protected static ?string $model = Customer::class;
+    protected static ?string $model = User::class;
 
     public static function getColumns(): array
     {
         return [
             ExportColumn::make('id')->label('ID'),
             ExportColumn::make('name')->label('Nombre'),
-            ExportColumn::make('phone')->label('Teléfono'),
             ExportColumn::make('email')->label('Correo'),
-            ExportColumn::make('notes')->label('Notas'),
+            ExportColumn::make('role_name')->label('Rol'),
             ExportColumn::make('created_at')->label('Creado')
                 ->getStateUsing(fn($record) => $record->created_at?->format('d/m/Y')),
             ExportColumn::make('updated_at')->label('Actualizado')
@@ -29,7 +28,7 @@ class CustomerExporter extends Exporter
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'La exportación de clientes completó con ' . Number::format($export->successful_rows) . ' filas exportadas.';
+        $body = 'La exportación de usuarios completó con ' . Number::format($export->successful_rows) . ' filas exportadas.';
         if ($failedRowsCount = $export->getFailedRowsCount()) {
             $body .= ' ' . Number::format($failedRowsCount) . ' filas fallaron.';
         }

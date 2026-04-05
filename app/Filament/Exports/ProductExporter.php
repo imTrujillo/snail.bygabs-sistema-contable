@@ -15,26 +15,25 @@ class ProductExporter extends Exporter
     public static function getColumns(): array
     {
         return [
-            ExportColumn::make('id')
-                ->label('ID'),
-            ExportColumn::make('unit'),
-            ExportColumn::make('name'),
-            ExportColumn::make('stock'),
-            ExportColumn::make('cost_price'),
-            ExportColumn::make('sale_price'),
-            ExportColumn::make('created_at'),
-            ExportColumn::make('updated_at'),
+            ExportColumn::make('id')->label('ID'),
+            ExportColumn::make('unit')->label('Unidad'),
+            ExportColumn::make('name')->label('Nombre'),
+            ExportColumn::make('stock')->label('Stock'),
+            ExportColumn::make('cost_price')->label('Precio Costo'),
+            ExportColumn::make('sale_price')->label('Precio Venta'),
+            ExportColumn::make('created_at')->label('Creado')
+                ->getStateUsing(fn($record) => $record->created_at?->format('d/m/Y')),
+            ExportColumn::make('updated_at')->label('Actualizado')
+                ->getStateUsing(fn($record) => $record->updated_at?->format('d/m/Y')),
         ];
     }
 
     public static function getCompletedNotificationBody(Export $export): string
     {
-        $body = 'Your product export has completed and ' . Number::format($export->successful_rows) . ' ' . str('row')->plural($export->successful_rows) . ' exported.';
-
+        $body = 'La exportación de productos completó con ' . Number::format($export->successful_rows) . ' filas exportadas.';
         if ($failedRowsCount = $export->getFailedRowsCount()) {
-            $body .= ' ' . Number::format($failedRowsCount) . ' ' . str('row')->plural($failedRowsCount) . ' failed to export.';
+            $body .= ' ' . Number::format($failedRowsCount) . ' filas fallaron.';
         }
-
         return $body;
     }
 }

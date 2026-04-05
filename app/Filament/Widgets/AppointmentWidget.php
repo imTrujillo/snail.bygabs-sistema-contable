@@ -7,7 +7,7 @@ use Filament\Widgets\ChartWidget;
 class AppointmentWidget extends ChartWidget
 {
     protected  ?string $heading = 'Citas por Tipo';
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 2;
     protected  ?string $maxHeight = '300px';
 
     protected function getData(): array

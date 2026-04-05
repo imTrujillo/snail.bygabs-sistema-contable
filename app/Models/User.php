@@ -59,6 +59,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(JournalEntry::class);
     }
+
+    public function getRoleNameAttribute(): string
+    {
+        return $this->getRawOriginal('role') ?? '';
+    }
 }
 
 enum UserRole: string

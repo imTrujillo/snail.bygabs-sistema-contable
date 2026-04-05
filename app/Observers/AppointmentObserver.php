@@ -18,9 +18,11 @@ class AppointmentObserver
 
         $date = \Carbon\Carbon::parse($appointment->appointment_date)->format('d/m/Y H:i');
 
+        $customerName = $appointment->customer?->name ?? 'Sin cliente';
+
         Notification::make()
             ->title('Cita agendada')
-            ->body("Cita para **{$appointment->client->name}** el {$date}. Estado: *{$appointment->status}*.")
+            ->body("Cita para **{$customerName}** el {$date}. Estado: *{$appointment->status->value}*.")
             ->success()
             ->sendToDatabase($recipient);
     }
