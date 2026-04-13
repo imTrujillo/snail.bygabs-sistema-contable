@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customer extends Model
 {
-    protected $fillable = ['name', 'phone', 'email', 'notes'];
+    protected $fillable = ['name', 'phone', 'email', 'notes', 'nrc', 'nit', 'is_contributor'];
+
+    protected $casts = [
+        'is_contributor' => 'boolean',
+    ];
 
     public function appointments(): HasMany
     {

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Sale extends Model
 {
-    protected $fillable = ['appointment_id', 'customer_id', 'tax_document_id', 'total', 'payment_method'];
+    protected $fillable = ['appointment_id', 'customer_id', 'tax_document_id', 'total', 'payment_method', 'document_type'];
 
     protected $casts = [
         'total' => 'decimal:2',

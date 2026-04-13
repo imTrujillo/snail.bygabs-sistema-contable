@@ -21,6 +21,11 @@ class CustomerResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Operativo';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
+    protected static ?string $modelLabel = 'Cliente';
+    protected static ?string $pluralModelLabel = 'Clientes';
+    protected static ?string $navigationLabel = 'Clientes';
+    protected static ?string $breadcrumb = 'Clientes';
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema

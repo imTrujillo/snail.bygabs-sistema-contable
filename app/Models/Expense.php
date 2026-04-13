@@ -16,6 +16,10 @@ class Expense extends Model
         'paid_with',
         'account_id',
         'notes',
+        'document_type',
+        'supplier_name',
+        'supplier_nrc',
+        'iva_amount',
     ];
 
     protected $casts = [
@@ -25,7 +29,12 @@ class Expense extends Model
 
     public function account(): BelongsTo
     {
-        return $this->belongsTo(Account::class);
+        return $this->belongsTo(Account::class, 'account_id');
+    }
+
+    public function paymentAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'payment_account_id');
     }
 
     public function journalEntry(): MorphOne

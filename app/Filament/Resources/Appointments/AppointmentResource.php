@@ -21,6 +21,11 @@ class AppointmentResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Operativo';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
 
+    protected static ?string $modelLabel = 'Cita';
+    protected static ?string $pluralModelLabel = 'Citas';
+    protected static ?string $navigationLabel = 'Citas';
+    protected static ?string $breadcrumb = 'Citas';
+
     protected static ?string $recordTitleAttribute = 'appointment_date';
 
     public static function form(Schema $schema): Schema

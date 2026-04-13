@@ -21,6 +21,11 @@ class SaleResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Operativo';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-shopping-bag';
 
+    protected static ?string $modelLabel = 'Venta';
+    protected static ?string $pluralModelLabel = 'Ventas';
+    protected static ?string $navigationLabel = 'Ventas';
+    protected static ?string $breadcrumb = 'Ventas';
+
     protected static ?string $recordTitleAttribute = 'total';
 
     public static function form(Schema $schema): Schema

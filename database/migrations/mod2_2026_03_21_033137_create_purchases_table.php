@@ -22,7 +22,8 @@ return new class extends Migration
             $table->float('credit_fiscal')->default(0);
             $table->float('total_amount')->default(0);
             $table->foreignId('account_id')->constrained()->cascadeOnDelete();
-            $table->string('notes');
+            $table->string('document_number')->nullable(); // ✅ faltaba
+            $table->string('notes')->nullable();           // ✅ nullable
             $table->timestamps();
         });
     }

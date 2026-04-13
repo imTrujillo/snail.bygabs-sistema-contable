@@ -19,7 +19,12 @@ return new class extends Migration
             $table->dateTime('expense_date');
             $table->string('paid_with');
             $table->foreignId('account_id')->constrained()->cascadeOnDelete();
-            $table->string('notes');
+            $table->foreignId('payment_account_id')->nullable()->constrained('accounts')->nullOnDelete();
+            $table->string('notes')->nullable();
+            $table->enum('document_type', ['FCF', 'CCF'])->nullable();
+            $table->string('supplier_name')->nullable();
+            $table->string('supplier_nrc')->nullable();
+            $table->float('iva_amount')->default(0);
             $table->timestamps();
         });
     }

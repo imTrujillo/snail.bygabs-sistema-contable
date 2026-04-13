@@ -21,6 +21,11 @@ class ExpenseResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Operativo';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
 
+    protected static ?string $modelLabel = 'Gasto';
+    protected static ?string $pluralModelLabel = 'Gastos';
+    protected static ?string $navigationLabel = 'Gastos';
+    protected static ?string $breadcrumb = 'Gastos';
+
     protected static ?string $recordTitleAttribute = 'description';
 
     public static function form(Schema $schema): Schema

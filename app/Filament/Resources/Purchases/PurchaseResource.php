@@ -21,6 +21,11 @@ class PurchaseResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Fiscal';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-inbox-arrow-down';
 
+    protected static ?string $modelLabel = 'Compra';
+    protected static ?string $pluralModelLabel = 'Compras';
+    protected static ?string $navigationLabel = 'Compras';
+    protected static ?string $breadcrumb = 'Compras';
+
     protected static ?string $recordTitleAttribute = 'purchase_date';
 
     public static function form(Schema $schema): Schema

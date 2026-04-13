@@ -22,6 +22,11 @@ class JournalEntryResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Contabilidad';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-book-open';
 
+    protected static ?string $modelLabel = 'Asiento Contable';
+    protected static ?string $pluralModelLabel = 'Asientos Contables';
+    protected static ?string $navigationLabel = 'Asientos Contables';
+    protected static ?string $breadcrumb = 'Asientos Contables';
+
     protected static ?string $recordTitleAttribute = 'description';
 
     public static function form(Schema $schema): Schema

@@ -13,12 +13,12 @@ class CompanySettingSeeder extends Seeder
     public function run(): void
     {
         CompanySetting::create([
-            'name' => 'Emprendimiento snail.bygabs',
+            'name' => 'caracol studio',
             'nrc' => '',
             'nit' => '',
             'address' => 'San Salvador',
             'tax_regime' => 'Consumidor Final',
-            'logo' => 'images/logo.png'
+            'logo' => '/logo.jpeg'
         ]);
     }
 }

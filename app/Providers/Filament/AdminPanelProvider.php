@@ -8,6 +8,7 @@ use App\Filament\Widgets\InvoiceWidget;
 use App\Filament\Widgets\SaleWidget;
 use App\Filament\Widgets\StatsOverviewWidget;
 use App\Models\CompanySetting;
+use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 use Filament\FontProviders\GoogleFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -23,7 +24,6 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Kenepa\TranslationManager\TranslationManagerPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -84,7 +84,7 @@ class AdminPanelProvider extends PanelProvider
                 'Configuración'
             ])
             ->plugins([
-                TranslationManagerPlugin::make()->quickTranslateNavigationRegistration(false),
+                AuthUIEnhancerPlugin::make(),
             ])
             ->renderHook(
                 'panels::body.start',

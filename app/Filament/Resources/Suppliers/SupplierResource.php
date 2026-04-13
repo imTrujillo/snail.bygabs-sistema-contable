@@ -21,6 +21,11 @@ class SupplierResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Fiscal';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-truck';
 
+    protected static ?string $modelLabel = 'Proveedor';
+    protected static ?string $pluralModelLabel = 'Proveedores';
+    protected static ?string $navigationLabel = 'Proveedores';
+    protected static ?string $breadcrumb = 'Proveedores';
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema

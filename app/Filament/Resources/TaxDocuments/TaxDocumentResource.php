@@ -19,6 +19,11 @@ class TaxDocumentResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Fiscal';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
+    protected static ?string $modelLabel = 'Documento Fiscal';
+    protected static ?string $pluralModelLabel = 'Documentos Fiscales';
+    protected static ?string $navigationLabel = 'Documentos Fiscales';
+    protected static ?string $breadcrumb = 'Documentos Fiscales';
+
     protected static ?string $recordTitleAttribute = 'type';
 
     public static function canCreate(): bool

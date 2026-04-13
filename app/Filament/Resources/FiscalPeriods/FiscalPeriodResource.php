@@ -21,6 +21,11 @@ class FiscalPeriodResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Fiscal';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-calendar';
 
+    protected static ?string $modelLabel = 'Período Fiscal';
+    protected static ?string $pluralModelLabel = 'Períodos Fiscales';
+    protected static ?string $navigationLabel = 'Períodos Fiscales';
+    protected static ?string $breadcrumb = 'Períodos Fiscales';
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema

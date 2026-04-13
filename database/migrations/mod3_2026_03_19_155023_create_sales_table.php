@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('appointment_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('tax_document_id')->nullable()->constrained()->nullOnDelete();
             $table->float('total')->default(0);
+            $table->enum('document_type', ['FCF', 'CCF'])->nullable();
             $table->enum('payment_method', ['Efectivo', 'Transferencia', 'Tarjeta']);
             $table->timestamps();
         });

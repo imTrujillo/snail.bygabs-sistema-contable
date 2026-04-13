@@ -13,14 +13,15 @@ class ExpenseObserver
 {
     public function created(Expense $expense): void
     {
-        // 1. Guard: si no hay periodo activo, no crear asiento
         $period = FiscalPeriod::where('start_date', '<=', now())
             ->where('end_date', '>=', now())
             ->first();
 
         if (!$period) return;
 
-        // 2. Crear asiento contable
+        // Guard: debe tener cuenta de pago asignada
+        if (!$expense->payment_account_id) return;
+
         $entry = JournalEntry::create([
             'entry_date'       => $expense->expense_date,
             'description'      => "Gasto - {$expense->description}",
@@ -30,7 +31,11 @@ class ExpenseObserver
             'user_id'          => Auth::check() ? Auth::id() : null,
         ]);
 
-        // 3. Línea DÉBITO → cuenta de gasto seleccionada
+        $isCCF = $expense->document_type === 'CCF';
+        $iva   = $isCCF ? ($expense->iva_amount ?? round($expense->amount * 0.13, 2)) : 0;
+        $total = $expense->amount + $iva;
+
+        // 1. DÉBITO → cuenta de gasto (monto sin IVA)
         $entry->lines()->create([
             'account_id'  => $expense->account_id,
             'debit'       => $expense->amount,
@@ -38,29 +43,37 @@ class ExpenseObserver
             'description' => $expense->description,
         ]);
 
-        // 4. Línea CRÉDITO → caja o banco según método de pago
-        $creditAccount = match ($expense->paid_with) {
-            'Efectivo'      => Account::where('code', '1102')->first(),
-            'Transferencia' => Account::where('code', '1101')->first(),
-            'Tarjeta'       => Account::where('code', '1101')->first(),
-            default         => Account::where('code', '1102')->first(), // ← fallback
-        };
+        // 2. DÉBITO → IVA crédito fiscal (solo si es CCF)
+        if ($isCCF && $iva > 0) {
+            $ivaAccount = Account::where('code', '1106')->first();
 
-        // 5. Guard: si la cuenta no existe en el plan de cuentas
-        if (!$creditAccount) return;
+            if ($ivaAccount) {
+                $entry->lines()->create([
+                    'account_id'  => $ivaAccount->id,
+                    'debit'       => $iva,
+                    'credit'      => 0,
+                    'description' => "IVA crédito fiscal - {$expense->description}",
+                ]);
+            }
+        }
 
+        // 3. CRÉDITO → cuenta de pago (ya resuelta en el form, sin match)
         $entry->lines()->create([
-            'account_id'  => $creditAccount->id,
+            'account_id'  => $expense->payment_account_id,
             'debit'       => 0,
-            'credit'      => $expense->amount,
-            'description' => 'Pago de gasto',
+            'credit'      => $total,
+            'description' => "Pago de gasto" . ($isCCF ? " (CCF - {$expense->supplier_name})" : ''),
         ]);
 
         $recipient = Auth::user();
         if ($recipient) {
+            $body = "**{$expense->description}** por \${$expense->amount}";
+            $body .= $isCCF ? " + IVA \${$iva} (CCF)" : " (FCF)";
+            $body .= " — Pagado con: *{$expense->paid_with}*.";
+
             Notification::make()
                 ->title('Gasto registrado')
-                ->body("**{$expense->description}** por \${$expense->amount} — Pagado con: *{$expense->paid_with}*.")
+                ->body($body)
                 ->warning()
                 ->sendToDatabase($recipient);
         }

@@ -21,6 +21,11 @@ class AccountResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Contabilidad';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $modelLabel = 'Cuenta';
+    protected static ?string $pluralModelLabel = 'Cuentas';
+    protected static ?string $navigationLabel = 'Cuentas';
+    protected static ?string $breadcrumb = 'Cuentas';
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema

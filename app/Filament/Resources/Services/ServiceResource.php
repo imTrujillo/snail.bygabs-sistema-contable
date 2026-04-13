@@ -21,6 +21,10 @@ class ServiceResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Operativo';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-sparkles';
 
+    protected static ?string $modelLabel = 'Servicio';
+    protected static ?string $pluralModelLabel = 'Servicios';
+    protected static ?string $navigationLabel = 'Servicios';
+    protected static ?string $breadcrumb = 'Servicios';
 
     protected static ?string $recordTitleAttribute = 'name';
 

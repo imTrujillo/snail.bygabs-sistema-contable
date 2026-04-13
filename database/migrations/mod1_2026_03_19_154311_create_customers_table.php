@@ -16,7 +16,10 @@ return new class extends Migration
             $table->string('name');
             $table->string('phone');
             $table->string('email');
-            $table->string('notes');
+            $table->string('nrc')->nullable();
+            $table->string('nit')->nullable();
+            $table->boolean('is_contributor')->default(false);
+            $table->string('notes')->nullable();
             $table->timestamps();
         });
     }

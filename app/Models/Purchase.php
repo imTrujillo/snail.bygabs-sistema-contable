@@ -19,6 +19,7 @@ class Purchase extends Model
         'credit_fiscal',
         'total_amount',
         'account_id',
+        'document_number',
         'notes',
     ];
 

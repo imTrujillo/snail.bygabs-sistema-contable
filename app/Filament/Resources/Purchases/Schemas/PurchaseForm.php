@@ -47,12 +47,14 @@ class PurchaseForm
                                 titleAttribute: 'name',
                                 modifyQueryUsing: fn($query) => $query
                                     ->where('is_group', false)
+                                    ->whereIn('type', ['Activo', 'Gasto', 'Costo']) // ✅ solo cuentas destino válidas para compras
                                     ->orderBy('code'),
                             )
                             ->getOptionLabelFromRecordUsing(fn($record) => "{$record->code} – {$record->name}")
                             ->searchable()
                             ->required()
                             ->prefixIcon('heroicon-m-building-library')
+                            ->helperText('Ej: Mercancía (Activo) o Gasto de administración.')
                             ->columnSpan(1),
                     ]),
 

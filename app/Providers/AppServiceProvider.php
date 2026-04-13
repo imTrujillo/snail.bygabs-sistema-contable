@@ -13,6 +13,9 @@ use App\Models\Service;
 use App\Models\Supplier;
 use App\Models\TaxDocument;
 use App\Models\User;
+use Filament\Forms\Components\Field;
+use Filament\Tables\Columns\Column;
+use Filament\Tables\Filters\BaseFilter;
 use App\Observers\AppointmentObserver;
 use App\Observers\CustomerObserver;
 use App\Observers\ExpenseObserver;
@@ -52,5 +55,17 @@ class AppServiceProvider extends ServiceProvider
         Supplier::observe(SupplierObserver::class);
         TaxDocument::observe(TaxDocumentObserver::class);
         JournalEntry::observe(JournalEntryObserver::class);
+
+        Field::configureUsing(function (Field $component) {
+            $component->translateLabel();
+        });
+
+        Column::configureUsing(function (Column $component) {
+            $component->translateLabel();
+        });
+
+        BaseFilter::configureUsing(function (BaseFilter $component) {
+            $component->translateLabel();
+        });
     }
 }

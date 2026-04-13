@@ -2,58 +2,68 @@
 
 namespace App\Filament\Resources\Customers\Schemas;
 
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+
 
 class CustomerForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema
-            ->components([
+        return $schema->components([
 
-                Section::make('Información Personal')
-                    ->description('Datos de contacto del cliente.')
-                    ->icon('heroicon-o-user')
+            Section::make('Información del Cliente')
+                ->icon('heroicon-o-user')
+                ->columns(2)
+                ->schema([
+                    TextInput::make('name')
+                        ->label('Nombre')
+                        ->required()
+                        ->maxLength(255)
+                        ->columnSpanFull(),
 
-                    ->schema([
-                        TextInput::make('name')
-                            ->label('Nombre completo')
-                            ->required()
-                            ->maxLength(255),
+                    TextInput::make('phone')
+                        ->label('Teléfono')
+                        ->tel()
+                        ->maxLength(20),
 
-                        TextInput::make('phone')
-                            ->label('Teléfono')
-                            ->tel()
-                            ->telRegex('/^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\.\/0-9]*$/')
-                            ->required()
-                            ->maxLength(20)
-                            ->prefixIcon('heroicon-m-phone'),
+                    TextInput::make('email')
+                        ->label('Correo electrónico')
+                        ->email()
+                        ->maxLength(255),
 
-                        TextInput::make('email')
-                            ->label('Correo electrónico')
-                            ->email()
-                            ->required()
-                            ->maxLength(255)
-                            ->unique(ignoreRecord: true)
-                            ->prefixIcon('heroicon-m-envelope'),
-                    ]),
+                    Textarea::make('notes')
+                        ->label('Notas')
+                        ->rows(2)
+                        ->columnSpanFull(),
+                ]),
 
-                Section::make('Notas')
-                    ->description('Observaciones internas sobre el cliente.')
-                    ->icon('heroicon-o-clipboard-document')
-                    ->collapsed()
-                    ->schema([
-                        Textarea::make('notes')
-                            ->label('Notas')
-                            ->placeholder('Preferencias, historial relevante...')
-                            ->rows(4)
-                            ->default(null)
-                            ->columnSpanFull(),
-                    ]),
+            Section::make('Datos Fiscales')
+                ->description('Requerido si el cliente emite Crédito Fiscal (CCF).')
+                ->icon('heroicon-o-document-check')
+                ->columns(2)
+                ->schema([
+                    Toggle::make('is_contributor')
+                        ->label('Es contribuyente (emite CCF)')
+                        ->live()
+                        ->columnSpanFull(),
 
-            ]);
+                    TextInput::make('nrc')
+                        ->label('NRC')
+                        ->visible(fn(Get $get) => $get('is_contributor'))
+                        ->required(fn(Get $get) => $get('is_contributor'))
+                        ->maxLength(20),
+
+                    TextInput::make('nit')
+                        ->label('NIT')
+                        ->visible(fn(Get $get) => $get('is_contributor'))
+                        ->maxLength(20),
+                ]),
+        ]);
     }
 }
