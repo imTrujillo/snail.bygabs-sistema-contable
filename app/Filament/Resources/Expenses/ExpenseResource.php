@@ -12,6 +12,7 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class ExpenseResource extends Resource
@@ -52,5 +53,25 @@ class ExpenseResource extends Resource
             'create' => CreateExpense::route('/create'),
             'edit' => EditExpense::route('/{record}/edit'),
         ];
+    }
+
+    public static function canAccess(): bool
+    {
+        return Auth::user()?->isAdmin();
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->isAdmin();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->isAdmin();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::user()?->isAdmin();
     }
 }

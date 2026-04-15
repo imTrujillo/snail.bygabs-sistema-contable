@@ -30,7 +30,7 @@ class UsersTable
                     ->label('Email address')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('role')
+                TextColumn::make('role.name')
                     ->badge()
                     ->sortable(),
                 TextColumn::make('email_verified_at')

@@ -16,6 +16,7 @@ class JournalEntry extends Model
         'reference_id',
         'fiscal_period_id',
         'user_id',
+        'journal_entry_type_id'
     ];
 
     protected $casts = [
@@ -35,6 +36,11 @@ class JournalEntry extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function journalEntryType(): BelongsTo
+    {
+        return $this->belongsTo(JournalEntryType::class);
     }
 
     public function reference(): MorphTo

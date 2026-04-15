@@ -36,15 +36,15 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->colors([
                 'primary' => '#473919',
-                'gray' => '#F5EFDB',
+                'gray'    => '#ede3c4',
             ])
             ->font('Cinzel', provider: GoogleFontProvider::class)
-            ->brandLogo(fn() => CompanySetting::current()?->logo
-                ? asset('storage/' . CompanySetting::current()->logo)
-                : '/logo.jpeg')
-            ->favicon(fn() => CompanySetting::current()?->logo
-                ? asset('storage/' . CompanySetting::current()->logo)
-                : '/logo.jpeg')
+            ->brandLogo(fn() =>
+            asset('storage/' . CompanySetting::current()->logo)
+                ?? '/logo.png')
+            ->favicon(fn() =>
+            asset('storage/' . CompanySetting::current()->logo)
+                ?? '/logo.jpeg')
             ->brandLogoHeight('3rem')
             ->brandName(fn() => CompanySetting::current()?->name ?? config('app.name'))
             ->darkMode(false)
@@ -84,7 +84,7 @@ class AdminPanelProvider extends PanelProvider
                 'Configuración'
             ])
             ->plugins([
-                AuthUIEnhancerPlugin::make(),
+                AuthUIEnhancerPlugin::make()
             ])
             ->renderHook(
                 'panels::body.start',

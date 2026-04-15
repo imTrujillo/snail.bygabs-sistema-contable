@@ -12,6 +12,7 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class SaleResource extends Resource
@@ -52,5 +53,20 @@ class SaleResource extends Resource
             'create' => CreateSale::route('/create'),
             'edit' => EditSale::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->isAdmin();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->isAdmin();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::user()?->isAdmin();
     }
 }

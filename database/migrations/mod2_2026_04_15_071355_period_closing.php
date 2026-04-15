@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('journal_entries', function (Blueprint $table) {
+        Schema::create('period_closings', function (Blueprint $table) {
             $table->id();
-            $table->date('entry_date');
-            $table->string('description');
             $table->foreignId('fiscal_period_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('journal_entry_type_id')->constrained()->cascadeOnDelete();
-            $table->integer('reference_id');
-            $table->enum('reference_type', ['sale', 'purchase', 'expense', 'manual', 'adjustment']);
+            $table->dateTime('closed_at');
+            $table->float('total_income')->default(0);
+            $table->float('total_expense')->default(0);
+            $table->float('net_result')->default(0);
             $table->timestamps();
         });
     }
@@ -29,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('journal_entries');
+        Schema::dropIfExists('period_closings');
     }
 };

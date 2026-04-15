@@ -6,9 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Purchase extends Model
 {
+    use LogsActivity;
+
     protected $fillable = [
         'supplier_id',
         'tax_document_id',
@@ -31,6 +35,14 @@ class Purchase extends Model
         'credit_fiscal'      => 'decimal:2',
         'total_amount'       => 'decimal:2',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->setDescriptionForEvent(fn(string $eventName) => "Venta {$eventName}");
+    }
 
     public function supplier(): BelongsTo
     {

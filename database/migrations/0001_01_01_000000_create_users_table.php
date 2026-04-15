@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->enum('role', ['Admin', 'Empleado']);
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->foreignId('role_id')->constrained()->cascadeOnDelete();
+            $table->decimal('salary', 10, 2)->default(0);
+            $table->enum('salary_type', ['Mensual', 'Quincenal', 'Semanal'])->default('Mensual');
             $table->rememberToken();
             $table->timestamps();
         });

@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class JournalEntryResource extends Resource
@@ -53,5 +54,25 @@ class JournalEntryResource extends Resource
             'create' => CreateJournalEntry::route('/create'),
             'edit' => EditJournalEntry::route('/{record}/edit'),
         ];
+    }
+
+    public static function canAccess(): bool
+    {
+        return Auth::user()?->isAdmin();
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->isAdmin();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->isAdmin();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::user()?->isAdmin();
     }
 }

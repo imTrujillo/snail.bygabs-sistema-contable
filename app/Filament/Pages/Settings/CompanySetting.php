@@ -12,6 +12,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Filament\Forms\Contracts\HasForms;
+use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class CompanySetting extends Page implements HasForms
@@ -83,5 +84,25 @@ class CompanySetting extends Page implements HasForms
             ->title('Configuración guardada')
             ->success()
             ->send();
+    }
+
+    public static function canAccess(): bool
+    {
+        return Auth::user()?->isAdmin();
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->isAdmin();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->isAdmin();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::user()?->isAdmin();
     }
 }

@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, LogsActivity;
 
     /**
      * The attributes that are mass assignable.
@@ -23,7 +25,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role'
+        'role_id'
     ];
 
     /**
@@ -46,8 +48,20 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'role' => UserRole::class
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->setDescriptionForEvent(fn(string $eventName) => "Venta {$eventName}");
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 
     public function appointments(): HasMany
@@ -60,14 +74,23 @@ class User extends Authenticatable
         return $this->hasMany(JournalEntry::class);
     }
 
-    public function getRoleNameAttribute(): string
+    public function isAdmin(): bool
     {
-        return $this->getRawOriginal('role') ?? '';
+        return $this->role?->name === 'Administrador';
     }
-}
 
-enum UserRole: string
-{
-    case Admin    = 'Admin';
-    case Empleado = 'Empleado';
+    public function isAuxiliar(): bool
+    {
+        return $this->role?->name === 'Auxiliar';
+    }
+
+    public function isAccountant(): bool
+    {
+        return $this->role?->name === 'Contador';
+    }
+
+    public function isEmployee(): bool
+    {
+        return $this->role?->name === 'Empleado';
+    }
 }

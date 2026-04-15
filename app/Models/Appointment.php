@@ -7,15 +7,29 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Appointment extends Model
 {
+    use LogsActivity;
+
     protected $fillable = ["customer_id", 'user_id', 'appointment_date', 'status', 'notes'];
 
     protected $casts = [
         'appointment_date' => 'datetime',
         'status' => AppointmentStatus::class
     ];
+
+
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->setDescriptionForEvent(fn(string $eventName) => "Cita {$eventName}");
+    }
 
 
     public function customer(): BelongsTo

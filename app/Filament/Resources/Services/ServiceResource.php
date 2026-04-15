@@ -12,6 +12,7 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class ServiceResource extends Resource
@@ -52,5 +53,21 @@ class ServiceResource extends Resource
             'create' => CreateService::route('/create'),
             'edit' => EditService::route('/{record}/edit'),
         ];
+    }
+
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->isAdmin();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->isAdmin();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::user()?->isAdmin();
     }
 }

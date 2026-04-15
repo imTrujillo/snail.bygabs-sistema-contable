@@ -4,11 +4,15 @@ namespace App\Filament\Resources\Appointments\Schemas;
 
 use App\Models\AppointmentStatus;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Ramsey\Collection\Set;
 
 class AppointmentForm
 {
@@ -71,6 +75,40 @@ class AppointmentForm
                             ->default(null)
                             ->columnSpanFull(),
                     ]),
+
+                Section::make('Servicios')
+                    ->description('Selecciona los servicios de esta cita.')
+                    ->icon('heroicon-o-sparkles')
+                    ->schema([
+                        Repeater::make('appointmentServices')
+                            ->relationship('appointmentServices')
+                            ->label('Servicios')
+                            ->schema([
+                                Select::make('service_id')
+                                    ->label('Servicio')
+                                    ->relationship('service', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->required()
+                                    ->live()
+                                    ->afterStateUpdated(function (Set $set, Get $get) {
+                                        $service = \App\Models\Service::find($get('service_id'));
+                                        $set('price', $service?->price ?? 0);
+                                    }),
+
+                                TextInput::make('price')
+                                    ->label('Precio')
+                                    ->numeric()
+                                    ->readOnly()
+                                    ->prefix('$')
+                                    ->required()
+                                    ->step(0.01),
+                            ])
+                            ->columns(2)
+                            ->addActionLabel('Agregar servicio')
+                            ->minItems(1),
+                    ]),
+
             ]);
     }
 }

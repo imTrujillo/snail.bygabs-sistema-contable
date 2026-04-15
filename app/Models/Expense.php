@@ -5,9 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Expense extends Model
 {
+    use LogsActivity;
+
     protected $fillable = [
         'description',
         'category',
@@ -26,6 +30,15 @@ class Expense extends Model
         'amount'       => 'decimal:2',
         'expense_date' => 'date',
     ];
+
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->setDescriptionForEvent(fn(string $eventName) => "Gasto {$eventName}");
+    }
 
     public function account(): BelongsTo
     {
