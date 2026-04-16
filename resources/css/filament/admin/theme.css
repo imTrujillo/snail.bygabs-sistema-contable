@@ -122,6 +122,8 @@ aside.fi-sidebar {
 header.fi-topbar {
     background-color: #fefcf7 !important;
     border-bottom: 1px solid #ede3c4 !important;
+
+    padding: 0.75rem 1rem !important;
     box-shadow: 0 1px 4px rgba(71, 57, 25, 0.06) !important;
 }
 
@@ -459,7 +461,8 @@ input[type="radio"]:focus {
     background: #473919;
 }
 
-.fi-sidebar-item-label {
+.fi-sidebar-item-label,
+.fi-sidebar-item-label a {
     color: #c0aa80;
 }
 

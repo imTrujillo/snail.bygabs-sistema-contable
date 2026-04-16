@@ -10,10 +10,10 @@ class EnsureActiveFiscalPeriod
 {
     public function handle(Request $request, Closure $next)
     {
-        // Rutas que no necesitan período
         $excluded = [
-            'admin/fiscal-periods/select',
+            'admin/select-fiscal-period',  // slug correcto
             'admin/login',
+            'admin/logout',
             'livewire/update',
         ];
 
@@ -23,16 +23,14 @@ class EnsureActiveFiscalPeriod
             }
         }
 
-        // Si no hay período en sesión, redirigir a selección
         if (!session('active_fiscal_period_id')) {
-            return redirect('/admin/fiscal-periods/select');
+            return redirect('/admin/select-fiscal-period');
         }
 
-        // Verificar que el período sigue abierto
         $period = FiscalPeriod::find(session('active_fiscal_period_id'));
         if (!$period || $period->is_closed) {
             session()->forget('active_fiscal_period_id');
-            return redirect('/admin/fiscal-periods/select')
+            return redirect('/admin/select-fiscal-period')
                 ->with('warning', 'El período seleccionado fue cerrado. Selecciona uno nuevo.');
         }
 

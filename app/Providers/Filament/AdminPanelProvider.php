@@ -8,6 +8,7 @@ use App\Filament\Widgets\CalendarWidget;
 use App\Filament\Widgets\InvoiceWidget;
 use App\Filament\Widgets\SaleWidget;
 use App\Filament\Widgets\StatsOverviewWidget;
+use App\Http\Middleware\EnsureActiveFiscalPeriod;
 use App\Models\CompanySetting;
 use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
 use Filament\FontProviders\GoogleFontProvider;
@@ -84,6 +85,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                EnsureActiveFiscalPeriod::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

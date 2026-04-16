@@ -174,11 +174,6 @@ class FiscalPeriodResource extends Resource
         ];
     }
 
-    public static function canAccess(): bool
-    {
-        return Auth::user()?->isAdmin();
-    }
-
     public static function canCreate(): bool
     {
         return Auth::user()?->isAdmin();
