@@ -32,6 +32,12 @@ class UserForm
                             ->label('Teléfono')
                             ->tel()
                             ->nullable(),
+
+                        Select::make('role_id')
+                            ->label('Rol')
+                            ->relationship('role', 'name')
+                            ->required()
+                            ->prefixIcon('heroicon-m-shield-check'),
                     ]),
 
                 Section::make('Credenciales')
@@ -44,31 +50,6 @@ class UserForm
                             ->dehydrated(fn($state) => filled($state)),
                     ]),
 
-                Section::make('Rol y Salario')
-                    ->columns(2)
-                    ->schema([
-                        Select::make('role')
-                            ->label('Rol')
-                            ->options(Role::all()->pluck('name', 'id'))
-                            ->required(),
-
-                        TextInput::make('salary')
-                            ->label('Salario')
-                            ->numeric()
-                            ->prefix('$')
-                            ->minValue(0)
-                            ->step(0.01)
-                            ->default(0),
-
-                        Select::make('salary_type')
-                            ->label('Frecuencia de pago')
-                            ->options([
-                                'Mensual'    => 'Mensual',
-                                'Quincenal'  => 'Quincenal',
-                                'Semanal'    => 'Semanal',
-                            ])
-                            ->default('Mensual'),
-                    ]),
             ]);
     }
 }

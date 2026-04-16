@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\SelectFiscalPeriod;
 use App\Filament\Widgets\AppointmentWidget;
 use App\Filament\Widgets\CalendarWidget;
 use App\Filament\Widgets\InvoiceWidget;
@@ -35,23 +36,35 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => '#473919',
-                'gray'    => '#ede3c4',
+                'primary' => [
+                    50  => '#faf6ee',
+                    100 => '#f5efdb',
+                    200 => '#ede3c4',
+                    300 => '#d9ccaa',
+                    400 => '#c0aa80',
+                    500 => '#9a7c46',
+                    600 => '#6b5527',
+                    700 => '#473919',
+                    800 => '#352a12',
+                    900 => '#241c0c',
+                    950 => '#140f05',
+                ],
             ])
             ->font('Cinzel', provider: GoogleFontProvider::class)
-            ->brandLogo(fn() =>
-            asset('storage/' . CompanySetting::current()->logo)
-                ?? '/logo.png')
-            ->favicon(fn() =>
-            asset('storage/' . CompanySetting::current()->logo)
-                ?? '/logo.jpeg')
+            ->brandLogo(
+                fn() =>
+                CompanySetting::current()->logo && file_exists(public_path('storage/' . CompanySetting::current()->logo))
+                    ? asset('storage/' . CompanySetting::current()->logo)
+                    : asset('/logo.png')
+            )
             ->brandLogoHeight('3rem')
             ->brandName(fn() => CompanySetting::current()?->name ?? config('app.name'))
             ->darkMode(false)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Dashboard::class
+                Dashboard::class,
+                SelectFiscalPeriod::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
@@ -116,6 +129,12 @@ class AdminPanelProvider extends PanelProvider
                             opacity: 0.95;
                         }
 
+                        @media (max-width: 1024px) {
+                            #caracol-branding-left img {
+                                display: none;
+                            }
+                        }
+
                         .caracol-auth-header {
                             width: 100%;
                             text-align: center;
@@ -141,6 +160,7 @@ class AdminPanelProvider extends PanelProvider
                     </div>
                 ')
             )
-            ->viteTheme('resources/css/filament/admin/theme.css');
+            ->viteTheme('resources/css/filament/admin/theme.css')
+        ;
     }
 }

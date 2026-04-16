@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Models\Expense;
 use App\Models\FiscalPeriod;
 use App\Models\Purchase;
 use App\Models\TaxDocument;
@@ -72,5 +73,22 @@ class LibroCompras extends Page implements HasForms
             ->whereBetween('issue_date', [$period->start_date, $period->end_date])
             ->where('is_voided', false)
             ->sum('iva_amount');
+    }
+
+    // En LibroCompras.php
+    public function getExpenses()
+    {
+        if (!$this->fiscal_period_id) return collect();
+
+        $period = FiscalPeriod::find($this->fiscal_period_id);
+
+        // Gastos con CCF (tienen crédito fiscal)
+        return Expense::whereBetween('expense_date', [
+            $period->start_date,
+            $period->end_date
+        ])
+            ->where('document_type', 'CCF') // solo los que generan crédito
+            ->orderBy('expense_date')
+            ->get();
     }
 }

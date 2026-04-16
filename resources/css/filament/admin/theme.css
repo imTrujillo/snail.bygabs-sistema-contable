@@ -1,33 +1,20 @@
-@import "tailwindcss";
+@import "../../../../vendor/filafly/brisk/resources/css/theme.css";
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+@source "../../../../app/Filament/**/*";
+@source "../../../../resources/views/filament/**/*";
+@source "../../../../vendor/diogogpinto/filament-auth-ui-enhancer/resources/**/*.blade.php";
+@source "../../../../vendor/kenepa/translation-manager/resources/**/*.blade.php";
+@source "../../../../vendor/filament/**/*.blade.php";
+
+/*
+  CARACOL STUDIO - Paleta marrón con tipografía Cinzel
+  Colores originales + texto blanco en sidebar
+*/
 
 @theme {
-    --font-sans:
-        "Cormorant Garamond", "Instrument Sans", ui-sans-serif, system-ui,
-        sans-serif;
+    --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
     --font-display: "Cinzel", serif;
-}
 
-@source '../../../../app/Filament/**/*';
-@source '../../../../resources/views/filament/**/*';
-
-@source "../../../../vendor/diogogpinto/filament-auth-ui-enhancer/resources/**/*.blade.php";
-@import "../../../../vendor/guava/calendar/resources/css/theme.css";
-
-/* ═══════════════════════════════════════════════════════════
-   CARACOL STUDIO — Filament Theme
-   Palette: #473919 (brown/primary) · #F5EFDB (cream/gray)
-   ═══════════════════════════════════════════════════════════ */
-
-@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap");
-
-/* ── Filament color token overrides ── */
-:root {
-    /* Primary scale — brown/gold */
     --color-primary-50: #faf6ee;
     --color-primary-100: #f5efdb;
     --color-primary-200: #ede3c4;
@@ -39,74 +26,19 @@
     --color-primary-800: #352a12;
     --color-primary-900: #241c0c;
     --color-primary-950: #140f05;
-
-    /* Gray scale — warm cream tones */
-    --color-gray-50: #fefcf7;
-    --color-gray-100: #f5efdb;
-    --color-gray-200: #ede3c4;
-    --color-gray-300: #d9ccaa;
-    --color-gray-400: #c0aa80;
-    --color-gray-500: #9a7c46;
-    --color-gray-600: #6b5527;
-    --color-gray-700: #473919;
-    --color-gray-800: #352a12;
-    --color-gray-900: #241c0c;
-    --color-gray-950: #140f05;
-
-    /* Filament semantic tokens */
-    --fi-color-primary: #473919;
-    --fi-color-primary-dark: #352a12;
-    --fi-color-primary-light: #9a7c46;
-
-    /* Sidebar */
-    --sidebar-bg: #473919;
-    --sidebar-text: #f5efdb;
-    --sidebar-border: rgba(245, 239, 219, 0.12);
-
-    /* Topbar */
-    --topbar-bg: #fefcf7;
-    --topbar-border: #ede3c4;
-
-    /* Body / content */
-    --body-bg: #faf6ee;
-    --card-bg: #fefcf7;
-    --card-border: #ede3c4;
-    --card-border-radius: 0.375rem;
-
-    /* Inputs */
-    --input-bg: #fefcf7;
-    --input-border: #d9ccaa;
-    --input-focus-ring: #473919;
-
-    /* Typography */
-    --text-default: #2a1f0a;
-    --text-muted: #6b5527;
-    --text-heading: #473919;
 }
 
-/* ─────────────────────────────────────────
-   GOOGLE FONTS LOAD
-───────────────────────────────────────── */
-* {
-    font-feature-settings:
-        "kern" 1,
-        "liga" 1;
-}
+/* ═══════════════════════════════════════════════════════════
+   SIDEBAR - Marrón oscuro con texto BLANCO
+   ═══════════════════════════════════════════════════════════ */
 
-/* ─────────────────────────────────────────
-   SIDEBAR
-───────────────────────────────────────── */
-
-/* Main sidebar wrapper */
 .fi-sidebar,
 nav.fi-sidebar,
 [class*="fi-sidebar-nav"],
 aside.fi-sidebar {
     background-color: #473919 !important;
-    border-right: 1px solid rgba(245, 239, 219, 0.12) !important;
 }
 
-/* Sidebar inner */
 .fi-sidebar-nav,
 .fi-sidebar .fi-sidebar-nav-groups {
     background-color: #473919 !important;
@@ -121,7 +53,6 @@ aside.fi-sidebar {
 
 .fi-logo span,
 .fi-sidebar-header span {
-    font-family: "Cinzel", serif !important;
     font-size: 1.15rem !important;
     letter-spacing: 0.15em !important;
     text-transform: lowercase !important;
@@ -130,19 +61,17 @@ aside.fi-sidebar {
 
 /* Nav group labels */
 .fi-sidebar-group-label {
-    font-family: "Cinzel", serif !important;
-    font-size: 0.6rem !important;
+    font-size: 0.9rem !important;
     letter-spacing: 0.45em !important;
     text-transform: uppercase !important;
     color: rgba(245, 239, 219, 0.4) !important;
     padding-left: 1rem !important;
-    margin-top: 1.2rem !important;
 }
 
-/* Nav items */
+/* Nav items - TEXTO BLANCO */
 .fi-sidebar-item-button,
 .fi-sidebar-item a {
-    color: rgba(245, 239, 219, 0.75) !important;
+    color: #ffffff !important;
     font-family: "Cormorant Garamond", serif !important;
     font-size: 1rem !important;
     font-weight: 400 !important;
@@ -155,7 +84,7 @@ aside.fi-sidebar {
 
 .fi-sidebar-item-button:hover,
 .fi-sidebar-item a:hover {
-    background-color: rgba(245, 239, 219, 0.07) !important;
+    background-color: rgba(245, 239, 219, 0.1) !important;
     color: #f5efdb !important;
     border-left-color: #9a7c46 !important;
 }
@@ -165,7 +94,7 @@ aside.fi-sidebar {
 .fi-sidebar-item a.fi-active,
 .fi-sidebar-item-button[aria-current="page"],
 .fi-sidebar-item-button[data-active="true"] {
-    background-color: rgba(245, 239, 219, 0.1) !important;
+    background-color: rgba(245, 239, 219, 0.15) !important;
     color: #f5efdb !important;
     border-left-color: #f5efdb !important;
     font-weight: 500 !important;
@@ -174,18 +103,20 @@ aside.fi-sidebar {
 /* Nav icons */
 .fi-sidebar-item-button svg,
 .fi-sidebar-item a svg {
-    color: rgba(245, 239, 219, 0.5) !important;
+    color: rgba(245, 239, 219, 0.6) !important;
     transition: color 0.2s !important;
 }
+
 .fi-sidebar-item-button:hover svg,
 .fi-sidebar-item a:hover svg,
 .fi-sidebar-item-button.fi-active svg {
     color: #f5efdb !important;
 }
 
-/* ─────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════
    TOPBAR / HEADER
-───────────────────────────────────────── */
+   ═══════════════════════════════════════════════════════════ */
+
 .fi-topbar,
 .fi-header,
 header.fi-topbar {
@@ -197,36 +128,35 @@ header.fi-topbar {
 /* Page title in topbar */
 .fi-header-heading,
 .fi-topbar h1,
+.fi-breadcrumbs-item-label,
 .fi-breadcrumbs-item:last-child {
-    font-family: "Cinzel", serif !important;
     font-size: 1.1rem !important;
     font-weight: 500 !important;
     letter-spacing: 0.08em !important;
     color: #473919 !important;
 }
 
-/* Breadcrumbs */
-.fi-breadcrumbs-item,
-.fi-breadcrumbs-separator {
-    font-family: "Cormorant Garamond", serif !important;
-    font-size: 0.9rem !important;
-    color: #9a7c46 !important;
-    letter-spacing: 0.04em !important;
+.fi-header-heading {
+    font-size: 1.7rem !important;
+    padding-left: 1rem !important;
 }
 
-/* ─────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════
    BODY / PAGE BACKGROUND
-───────────────────────────────────────── */
+   ═══════════════════════════════════════════════════════════ */
+
 .fi-body,
 body,
 .fi-main,
 .fi-main-ctn {
     background-color: #faf6ee !important;
+    font-family: "Cinzel", serif !important;
 }
 
-/* ─────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════
    CARDS / PANELS / SECTIONS
-───────────────────────────────────────── */
+   ═══════════════════════════════════════════════════════════ */
+
 .fi-section,
 .fi-section-content,
 .fi-card,
@@ -242,7 +172,6 @@ body,
 .fi-section-header-heading,
 .fi-section h2,
 .fi-section h3 {
-    font-family: "Cinzel", serif !important;
     font-size: 0.85rem !important;
     font-weight: 500 !important;
     letter-spacing: 0.15em !important;
@@ -250,164 +179,10 @@ body,
     color: #473919 !important;
 }
 
-/* Section descriptions */
-.fi-section-header-description {
-    font-family: "Cormorant Garamond", serif !important;
-    font-size: 0.95rem !important;
-    color: #6b5527 !important;
-    font-style: italic !important;
-}
-
-/* ─────────────────────────────────────────
-   STATS OVERVIEW WIDGET
-───────────────────────────────────────── */
-.fi-wi-stats-overview-stat {
-    border-left: 3px solid #9a7c46 !important;
-}
-
-.fi-wi-stats-overview-stat-label {
-    font-family: "Cinzel", serif !important;
-    font-size: 0.65rem !important;
-    letter-spacing: 0.3em !important;
-    text-transform: uppercase !important;
-    color: #9a7c46 !important;
-}
-
-.fi-wi-stats-overview-stat-value {
-    font-family: "Cormorant Garamond", serif !important;
-    font-size: 2.2rem !important;
-    font-weight: 300 !important;
-    color: #473919 !important;
-    line-height: 1.1 !important;
-}
-
-.fi-wi-stats-overview-stat-description {
-    font-family: "Cormorant Garamond", serif !important;
-    font-size: 0.85rem !important;
-    font-style: italic !important;
-    color: #6b5527 !important;
-}
-
-/* ─────────────────────────────────────────
-   TABLES
-───────────────────────────────────────── */
-.fi-ta-table {
-    background-color: #fefcf7 !important;
-    border-color: #ede3c4 !important;
-}
-
-/* Table head */
-.fi-ta-header-cell,
-thead th,
-th.fi-ta-header-cell {
-    font-family: "Cinzel", serif !important;
-    font-size: 0.65rem !important;
-    letter-spacing: 0.3em !important;
-    text-transform: uppercase !important;
-    color: #473919 !important;
-    background-color: #f5efdb !important;
-    border-bottom: 1px solid #d9ccaa !important;
-}
-
-/* Table rows */
-.fi-ta-row,
-tbody tr {
-    border-bottom: 1px solid #f0e9d4 !important;
-    transition: background 0.15s !important;
-}
-
-.fi-ta-row:hover,
-tbody tr:hover {
-    background-color: #faf6ee !important;
-}
-
-/* Table cells */
-.fi-ta-cell,
-td.fi-ta-cell {
-    font-family: "Cormorant Garamond", serif !important;
-    font-size: 1rem !important;
-    color: #2a1f0a !important;
-}
-
-/* Table empty state */
-.fi-ta-empty-state-heading {
-    font-family: "Cinzel", serif !important;
-    color: #9a7c46 !important;
-    letter-spacing: 0.1em !important;
-}
-
-/* ─────────────────────────────────────────
-   BUTTONS
-───────────────────────────────────────── */
-
-/* Primary button */
-.fi-btn-primary,
-button[data-color="primary"],
-.fi-btn[data-color="primary"] {
-    background-color: #473919 !important;
-    color: #f5efdb !important;
-    border-color: #473919 !important;
-    font-family: "Cinzel", serif !important;
-    font-size: 0.72rem !important;
-    letter-spacing: 0.2em !important;
-    text-transform: uppercase !important;
-    border-radius: 0 !important;
-    padding: 0.65rem 1.5rem !important;
-    transition:
-        background 0.25s,
-        border-color 0.25s !important;
-}
-
-.fi-btn-primary:hover {
-    background-color: #6b5527 !important;
-    border-color: #6b5527 !important;
-}
-
-/* Secondary / gray button */
-.fi-btn-gray,
-button[data-color="gray"],
-.fi-btn[data-color="gray"] {
-    background-color: #fefcf7 !important;
-    color: #473919 !important;
-    border-color: #d9ccaa !important;
-    font-family: "Cinzel", serif !important;
-    font-size: 0.72rem !important;
-    letter-spacing: 0.15em !important;
-    text-transform: uppercase !important;
-    border-radius: 0 !important;
-    transition: all 0.2s !important;
-}
-
-.fi-btn-gray:hover {
-    background-color: #f5efdb !important;
-    border-color: #9a7c46 !important;
-}
-
-/* Danger button */
-.fi-btn-danger,
-button[data-color="danger"],
-.fi-btn[data-color="danger"] {
-    font-family: "Cinzel", serif !important;
-    font-size: 0.72rem !important;
-    letter-spacing: 0.15em !important;
-    text-transform: uppercase !important;
-    border-radius: 0 !important;
-}
-
-/* Success button */
-.fi-btn-success,
-button[data-color="success"],
-.fi-btn[data-color="success"] {
-    font-family: "Cinzel", serif !important;
-    font-size: 0.72rem !important;
-    letter-spacing: 0.15em !important;
-    text-transform: uppercase !important;
-    border-radius: 0 !important;
-}
-
-/* ─────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════
    FORM INPUTS
-───────────────────────────────────────── */
+   ═══════════════════════════════════════════════════════════ */
+
 .fi-input,
 .fi-fo-field-wrp input,
 .fi-fo-field-wrp select,
@@ -438,7 +213,6 @@ select.fi-select-input {
 .fi-fo-field-wrp-label,
 label.fi-fo-field-wrp-label,
 .fi-fo-field-label {
-    font-family: "Cinzel", serif !important;
     font-size: 0.68rem !important;
     letter-spacing: 0.2em !important;
     text-transform: uppercase !important;
@@ -446,36 +220,104 @@ label.fi-fo-field-wrp-label,
     margin-bottom: 0.4rem !important;
 }
 
-/* Helper / hint text */
-.fi-fo-field-wrp-helper-text,
-.fi-fo-hint {
-    font-family: "Cormorant Garamond", serif !important;
-    font-style: italic !important;
-    font-size: 0.88rem !important;
-    color: #9a7c46 !important;
+/* ═══════════════════════════════════════════════════════════
+   BUTTONS
+   ═══════════════════════════════════════════════════════════ */
+
+.fi-btn-primary,
+button[data-color="primary"],
+.fi-btn[data-color="primary"] {
+    background-color: #473919 !important;
+    color: #f5efdb !important;
+    border-color: #473919 !important;
+    font-size: 0.72rem !important;
+    letter-spacing: 0.2em !important;
+    text-transform: uppercase !important;
+    border-radius: 0 !important;
+    padding: 0.65rem 1.5rem !important;
+    transition:
+        background 0.25s,
+        border-color 0.25s !important;
 }
 
-/* Validation error */
-.fi-fo-field-wrp-error-message {
-    font-family: "Cormorant Garamond", serif !important;
-    font-style: italic !important;
-    font-size: 0.88rem !important;
+.fi-btn-primary:hover {
+    background-color: #6b5527 !important;
+    border-color: #6b5527 !important;
 }
 
-/* ─────────────────────────────────────────
+.fi-btn-gray,
+button[data-color="gray"],
+.fi-btn[data-color="gray"] {
+    background-color: #fefcf7 !important;
+    color: #473919 !important;
+    border-color: #d9ccaa !important;
+    font-size: 0.72rem !important;
+    letter-spacing: 0.15em !important;
+    text-transform: uppercase !important;
+    border-radius: 0 !important;
+    transition: all 0.2s !important;
+}
+
+.fi-btn-gray:hover {
+    background-color: #f5efdb !important;
+    border-color: #9a7c46 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLES
+   ═══════════════════════════════════════════════════════════ */
+
+.fi-ta-table {
+    background-color: #fefcf7 !important;
+    border-color: #ede3c4 !important;
+}
+
+.fi-ta-header-cell,
+thead th,
+th.fi-ta-header-cell {
+    font-size: 0.65rem !important;
+    letter-spacing: 0.3em !important;
+    text-transform: uppercase !important;
+    color: #473919 !important;
+    background-color: #f5efdb !important;
+    border-bottom: 1px solid #d9ccaa !important;
+}
+
+.fi-ta-row,
+tbody tr {
+    border-bottom: 1px solid #f0e9d4 !important;
+    transition: background 0.15s !important;
+}
+
+.fi-ta-row:hover,
+tbody tr:hover {
+    background-color: #faf6ee !important;
+}
+
+.fi-ta-cell,
+td.fi-ta-cell {
+    font-family: "Cormorant Garamond", serif !important;
+    font-size: 1rem !important;
+    color: #2a1f0a !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
    BADGES / PILLS
-───────────────────────────────────────── */
+   ═══════════════════════════════════════════════════════════ */
+
 .fi-badge {
-    font-family: "Cinzel", serif !important;
     font-size: 0.6rem !important;
     letter-spacing: 0.25em !important;
     text-transform: uppercase !important;
     border-radius: 0 !important;
+    background-color: #473919 !important;
+    color: #f5efdb !important;
 }
 
-/* ─────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════
    MODALS / DIALOGS
-───────────────────────────────────────── */
+   ═══════════════════════════════════════════════════════════ */
+
 .fi-modal-window {
     background-color: #fefcf7 !important;
     border: 1px solid #ede3c4 !important;
@@ -484,7 +326,6 @@ label.fi-fo-field-wrp-label,
 }
 
 .fi-modal-header-heading {
-    font-family: "Cinzel", serif !important;
     font-size: 1rem !important;
     font-weight: 500 !important;
     letter-spacing: 0.12em !important;
@@ -492,16 +333,33 @@ label.fi-fo-field-wrp-label,
     text-transform: lowercase !important;
 }
 
-.fi-modal-description {
-    font-family: "Cormorant Garamond", serif !important;
-    font-style: italic !important;
-    font-size: 1rem !important;
-    color: #6b5527 !important;
+/* ═══════════════════════════════════════════════════════════
+   STATS OVERVIEW WIDGET
+   ═══════════════════════════════════════════════════════════ */
+
+.fi-wi-stats-overview-stat {
+    border-left: 3px solid #9a7c46 !important;
 }
 
-/* ─────────────────────────────────────────
-   DROPDOWN MENUS
-───────────────────────────────────────── */
+.fi-wi-stats-overview-stat-label {
+    font-size: 0.65rem !important;
+    letter-spacing: 0.3em !important;
+    text-transform: uppercase !important;
+    color: #9a7c46 !important;
+}
+
+.fi-wi-stats-overview-stat-value {
+    font-family: "Cormorant Garamond", serif !important;
+    font-size: 2.2rem !important;
+    font-weight: 300 !important;
+    color: #473919 !important;
+    line-height: 1.1 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DROPDOWNS
+   ═══════════════════════════════════════════════════════════ */
+
 .fi-dropdown-list {
     background-color: #fefcf7 !important;
     border: 1px solid #d9ccaa !important;
@@ -519,81 +377,43 @@ label.fi-fo-field-wrp-label,
     background-color: #f5efdb !important;
 }
 
-/* ─────────────────────────────────────────
-   NOTIFICATIONS / ALERTS
-───────────────────────────────────────── */
-.fi-no-notification {
+/* ═══════════════════════════════════════════════════════════
+   CHECKBOXES & RADIO
+   ═══════════════════════════════════════════════════════════ */
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    background-color: #473919 !important;
+    border-color: #473919 !important;
+}
+
+input[type="checkbox"]:focus,
+input[type="radio"]:focus {
+    box-shadow: 0 0 0 3px rgba(71, 57, 25, 0.2) !important;
+    border-color: #473919 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SELECTS / LISTBOX
+   ═══════════════════════════════════════════════════════════ */
+
+.choices__list--dropdown,
+.fi-select-option-list {
     background-color: #fefcf7 !important;
-    border-color: #ede3c4 !important;
-    box-shadow: 0 8px 24px rgba(71, 57, 25, 0.12) !important;
+    border-color: #d9ccaa !important;
 }
 
-.fi-no-notification-title {
-    font-family: "Cinzel", serif !important;
-    font-size: 0.75rem !important;
-    letter-spacing: 0.15em !important;
+.choices__item--selectable.is-highlighted,
+.fi-select-option:hover {
+    background-color: #f5efdb !important;
     color: #473919 !important;
 }
 
-.fi-no-notification-body {
-    font-family: "Cormorant Garamond", serif !important;
-    font-size: 0.95rem !important;
-    color: #6b5527 !important;
-}
-
-/* ─────────────────────────────────────────
-   TABS
-───────────────────────────────────────── */
-.fi-tabs-tab {
-    font-family: "Cinzel", serif !important;
-    font-size: 0.65rem !important;
-    letter-spacing: 0.25em !important;
-    text-transform: uppercase !important;
-    color: #9a7c46 !important;
-    border-radius: 0 !important;
-    border-bottom: 2px solid transparent !important;
-    transition: all 0.2s !important;
-}
-
-.fi-tabs-tab:hover {
-    color: #473919 !important;
-    border-bottom-color: #9a7c46 !important;
-}
-
-.fi-tabs-tab[aria-selected="true"],
-.fi-tabs-tab.fi-active {
-    color: #473919 !important;
-    border-bottom-color: #473919 !important;
-    background: transparent !important;
-}
-
-/* ─────────────────────────────────────────
-   PAGE HEADINGS (resource list pages)
-───────────────────────────────────────── */
-.fi-page-header-heading,
-h1.fi-page-header-heading {
-    font-family: "Cinzel", serif !important;
-    font-size: 1.4rem !important;
-    font-weight: 400 !important;
-    letter-spacing: 0.12em !important;
-    text-transform: lowercase !important;
-    color: #473919 !important;
-}
-
-.fi-page-header-subheading {
-    font-family: "Cormorant Garamond", serif !important;
-    font-style: italic !important;
-    font-size: 1rem !important;
-    color: #9a7c46 !important;
-}
-
-/* ─────────────────────────────────────────
+/* ═══════════════════════════════════════════════════════════
    PAGINATION
-───────────────────────────────────────── */
-.fi-pagination-previous-btn,
-.fi-pagination-next-btn,
+   ═══════════════════════════════════════════════════════════ */
+
 .fi-pagination-item {
-    font-family: "Cinzel", serif !important;
     font-size: 0.65rem !important;
     letter-spacing: 0.15em !important;
     border-radius: 0 !important;
@@ -607,91 +427,42 @@ h1.fi-page-header-heading {
     border-color: #473919 !important;
 }
 
-/* ─────────────────────────────────────────
-   CHECKBOX & RADIO
-───────────────────────────────────────── */
-input[type="checkbox"]:checked,
-input[type="radio"]:checked {
-    background-color: #473919 !important;
-    border-color: #473919 !important;
+/* ═══════════════════════════════════════════════════════════
+   FONT FEATURES
+   ═══════════════════════════════════════════════════════════ */
+
+* {
+    font-feature-settings:
+        "kern" 1,
+        "liga" 1 !important;
 }
 
-input[type="checkbox"]:focus,
-input[type="radio"]:focus {
-    box-shadow: 0 0 0 3px rgba(71, 57, 25, 0.2) !important;
-    border-color: #473919 !important;
-}
+/* ═══════════════════════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════════════════════ */
 
-/* ─────────────────────────────────────────
-   SELECT / LISTBOX (searchable)
-───────────────────────────────────────── */
-.choices__list--dropdown,
-.fi-select-option-list {
-    background-color: #fefcf7 !important;
-    border-color: #d9ccaa !important;
-}
-
-.choices__item--selectable.is-highlighted,
-.fi-select-option:hover {
-    background-color: #f5efdb !important;
-    color: #473919 !important;
-}
-
-/* ─────────────────────────────────────────
-   SCROLLBAR (webkit)
-───────────────────────────────────────── */
 ::-webkit-scrollbar {
     width: 5px;
     height: 5px;
 }
+
 ::-webkit-scrollbar-track {
     background: #f5efdb;
 }
+
 ::-webkit-scrollbar-thumb {
     background: #c0aa80;
     border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
     background: #473919;
 }
 
-/* ─────────────────────────────────────────
-   MISC TYPOGRAPHY IMPROVEMENTS
-───────────────────────────────────────── */
-p,
-span,
-div,
-td,
-li,
-a {
-    font-feature-settings:
-        "kern" 1,
-        "liga" 1,
-        "onum" 1;
+.fi-sidebar-item-label {
+    color: #c0aa80;
 }
 
-/* Links in content */
-.fi-main a:not([class]) {
-    color: #473919 !important;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-color: #9a7c46;
-    transition: color 0.2s;
-}
-.fi-main a:not([class]):hover {
-    color: #6b5527 !important;
-}
-
-/* ─────────────────────────────────────────
-   GRAIN TEXTURE OVERLAY
-───────────────────────────────────────── */
-.fi-body::after,
-body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9998;
-    opacity: 0.4;
+.fi-header-actions-ctn {
+    margin: auto 10px !important;
 }
