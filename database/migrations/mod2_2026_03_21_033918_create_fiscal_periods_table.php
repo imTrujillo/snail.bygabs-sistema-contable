@@ -17,6 +17,12 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date');
             $table->boolean('is_closed')->default(false);
+
+            $table->decimal('total_income', 12, 2)->default(0);
+            $table->decimal('total_expense', 12, 2)->default(0);
+            $table->decimal('net_result', 12, 2)->default(0);
+            $table->foreignId('closed_by')->nullable()->constrained('users');
+            $table->dateTime('closed_at')->nullable();
             $table->timestamps();
         });
     }

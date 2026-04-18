@@ -7,7 +7,6 @@ use App\Models\FiscalPeriod;
 use App\Models\JournalEntry;
 use App\Models\JournalEntryLine;
 use App\Models\JournalEntryType;
-use App\Models\PeriodClosing;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -41,7 +40,7 @@ class PeriodClosingService
     /**
      * Ejecuta el cierre formal del período.
      */
-    public function close(FiscalPeriod $period): PeriodClosing
+    public function close(FiscalPeriod $period): FiscalPeriod
     {
         return DB::transaction(function () use ($period) {
 
@@ -58,13 +57,13 @@ class PeriodClosingService
             $this->crearPartidaCierre($period, $netResult);
 
             // 4. Guardar en period_closings
-            $closing = PeriodClosing::create([
-                'fiscal_period_id' => $period->id,
-                'user_id'          => Auth::id(),
-                'closed_at'        => now(),
-                'total_income'     => $totalIncome,
-                'total_expense'    => $totalCost + $totalExpense,
-                'net_result'       => $netResult,
+            $period->update([
+                'is_closed'    => true,
+                'total_income' => $totalIncome,
+                'total_expense' => $totalCost + $totalExpense,
+                'net_result'   => $netResult,
+                'closed_by'    => Auth::id(),
+                'closed_at'    => now(),
             ]);
 
             // 5. Marcar período como cerrado
@@ -73,7 +72,7 @@ class PeriodClosingService
             // 6. Trasladar saldos al siguiente período (si existe)
             $this->trasladarSaldos($period);
 
-            return $closing;
+            return $period;
         });
     }
 

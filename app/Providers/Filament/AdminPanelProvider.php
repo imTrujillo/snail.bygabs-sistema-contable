@@ -56,7 +56,7 @@ class AdminPanelProvider extends PanelProvider
                 fn() =>
                 CompanySetting::current()->logo && file_exists(public_path('storage/' . CompanySetting::current()->logo))
                     ? asset('storage/' . CompanySetting::current()->logo)
-                    : asset('/logo.png')
+                    : asset('/logo.jpeg')
             )
             ->brandLogoHeight('3rem')
             ->brandName(fn() => CompanySetting::current()?->name ?? config('app.name'))

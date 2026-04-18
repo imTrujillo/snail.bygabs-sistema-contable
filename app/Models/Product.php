@@ -16,12 +16,10 @@ class Product extends Model
         'stock',
         'unit',
         'cost_price',
-        'sale_price',
     ];
 
     protected $casts = [
         'cost_price' => 'decimal:2',
-        'sale_price' => 'decimal:2',
     ];
 
     public function getActivitylogOptions(): LogOptions

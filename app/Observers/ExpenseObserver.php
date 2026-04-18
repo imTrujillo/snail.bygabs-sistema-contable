@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Expense;
 use App\Models\FiscalPeriod;
 use App\Models\JournalEntry;
+use App\Models\JournalEntryType;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,15 +14,14 @@ class ExpenseObserver
 {
     public function created(Expense $expense): void
     {
-        $period = FiscalPeriod::where('start_date', '<=', now())
-            ->where('end_date', '>=', now())
-            ->first();
+        $period = FiscalPeriod::find(session('active_fiscal_period_id'));
 
         if (!$period) return;
 
         // Guard: debe tener cuenta de pago asignada
         if (!$expense->payment_account_id) return;
 
+        $entryType = JournalEntryType::where('name', 'Diario')->firstOrFail();
         $entry = JournalEntry::create([
             'entry_date'       => $expense->expense_date,
             'description'      => "Gasto - {$expense->description}",
@@ -29,6 +29,7 @@ class ExpenseObserver
             'reference_id'     => $expense->id,
             'fiscal_period_id' => $period->id,
             'user_id'          => Auth::check() ? Auth::id() : null,
+            'journal_entry_type_id' => $entryType->id,
         ]);
 
         $isCCF = $expense->document_type === 'CCF';

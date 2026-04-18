@@ -2,8 +2,6 @@
 
 namespace App\Filament\Resources\Sales;
 
-use App\Filament\Resources\Sales\Pages\CreateSale;
-use App\Filament\Resources\Sales\Pages\EditSale;
 use App\Filament\Resources\Sales\Pages\ListSales;
 use App\Filament\Resources\Sales\Schemas\SaleForm;
 use App\Filament\Resources\Sales\Tables\SalesTable;
@@ -12,7 +10,6 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class SaleResource extends Resource
@@ -50,23 +47,21 @@ class SaleResource extends Resource
     {
         return [
             'index' => ListSales::route('/'),
-            'create' => CreateSale::route('/create'),
-            'edit' => EditSale::route('/{record}/edit'),
         ];
     }
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->isAdmin();
+        return false;
     }
 
     public static function canEdit($record): bool
     {
-        return Auth::user()?->isAdmin();
+        return false;
     }
 
     public static function canDelete($record): bool
     {
-        return Auth::user()?->isAdmin();
+        return false;
     }
 }

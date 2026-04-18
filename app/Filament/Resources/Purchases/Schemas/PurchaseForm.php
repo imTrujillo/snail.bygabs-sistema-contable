@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Purchases\Schemas;
 
+use App\Models\FiscalPeriod;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
@@ -15,6 +16,8 @@ class PurchaseForm
 {
     public static function configure(Schema $schema): Schema
     {
+        $period = FiscalPeriod::find(session('active_fiscal_period_id'));
+
         return $schema
             ->components([
 
@@ -36,8 +39,9 @@ class PurchaseForm
                             ->required()
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->default(now())
-                            ->maxDate(now())
+                            ->default($period?->start_date ?? now())
+                            ->minDate($period?->start_date ?? now())
+                            ->maxDate($period?->end_date ?? now())
                             ->columnSpan(1),
 
                         Select::make('account_id')

@@ -4,7 +4,9 @@ namespace App\Filament\Resources\Appointments\Tables;
 
 use App\Filament\Exports\AppointmentExporter;
 use App\Filament\Imports\AppointmentImporter;
+use App\Models\Appointment;
 use App\Models\AppointmentStatus;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -61,7 +63,7 @@ class AppointmentsTable
                     ->label('Estado')
                     ->sortable()
                     ->colors([
-                        'warning'  => AppointmentStatus::Pendiente,
+                        'danger'  => AppointmentStatus::Pendiente,
                         'danger'   => AppointmentStatus::Cancelada,
                         'success'     => AppointmentStatus::Completada,
                     ]),
@@ -131,8 +133,20 @@ class AppointmentsTable
 
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
+                Action::make('completar')
+                    ->label('Marcar completada')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('¿Marcar cita como completada?')
+                    ->modalDescription('Se generará una venta automáticamente.')
+                    ->modalSubmitActionLabel('Sí, completar')
+                    ->visible(fn(Appointment $record) => $record->status->value !== 'Completada')
+                    ->action(fn(Appointment $record) => $record->update(['status' => 'Completada'])),
+                EditAction::make()
+                    ->visible(fn(Appointment $record) => $record->status->value !== 'Completada'),
                 DeleteAction::make()
+                    ->visible(fn(Appointment $record) => $record->status->value !== 'Completada')
                     ->requiresConfirmation(),
             ])
 

@@ -12,12 +12,20 @@ class FiscalPeriod extends Model
         'start_date',
         'end_date',
         'is_closed',
+        'total_income',
+        'total_expense',
+        'net_result',
+        'closed_by',
+        'closed_at'
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date'   => 'date',
         'is_closed'  => 'boolean',
+        'total_income' => 'decimal:2',
+        'total_expense' => 'decimal:2',
+        'net_result' => 'decimal:2',
     ];
 
     public function journalEntries(): HasMany

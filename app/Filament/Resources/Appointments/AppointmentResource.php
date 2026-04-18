@@ -12,6 +12,7 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 class AppointmentResource extends Resource
@@ -52,5 +53,15 @@ class AppointmentResource extends Resource
             'create' => CreateAppointment::route('/create'),
             'edit' => EditAppointment::route('/{record}/edit'),
         ];
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return $record->status->value !== 'Completada';
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return $record->status->value !== 'Completada';
     }
 }

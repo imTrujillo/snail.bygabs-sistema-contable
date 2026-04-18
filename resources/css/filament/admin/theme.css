@@ -196,10 +196,13 @@ select.fi-select-input {
     color: #2a1f0a !important;
     font-family: "Cormorant Garamond", serif !important;
     font-size: 1rem !important;
-    border-radius: 0.25rem !important;
     transition:
         border-color 0.2s,
         box-shadow 0.2s !important;
+}
+
+.fi-input-wrp {
+    border-radius: 0 !important;
 }
 
 .fi-input:focus,
@@ -312,7 +315,6 @@ td.fi-ta-cell {
     letter-spacing: 0.25em !important;
     text-transform: uppercase !important;
     border-radius: 0 !important;
-    background-color: #473919 !important;
     color: #f5efdb !important;
 }
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Expenses\Schemas;
 
+use App\Models\FiscalPeriod;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -17,6 +18,8 @@ class ExpenseForm
 {
     public static function configure(Schema $schema): Schema
     {
+        $period = FiscalPeriod::find(session('active_fiscal_period_id'));
+
         return $schema->components([
 
             Section::make('Detalle del Gasto')
@@ -79,8 +82,9 @@ class ExpenseForm
                         ->required()
                         ->native(false)
                         ->displayFormat('d/m/Y H:i')
-                        ->default(now())
-                        ->maxDate(now())
+                        ->default($period?->start_date ?? now())
+                        ->minDate($period?->start_date ?? now())
+                        ->maxDate($period?->end_date ?? now())
                         ->columnSpan(1),
 
                     TextInput::make('amount')

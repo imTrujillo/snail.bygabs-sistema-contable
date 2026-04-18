@@ -21,10 +21,10 @@ class ProductResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Operativo';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cube';
 
-    protected static ?string $modelLabel = 'Producto';
-    protected static ?string $pluralModelLabel = 'Inventario';
-    protected static ?string $navigationLabel = 'Inventario';
-    protected static ?string $breadcrumb = 'Inventario';
+    protected static ?string $modelLabel = 'Insumo';
+    protected static ?string $pluralModelLabel = 'Insumos';
+    protected static ?string $navigationLabel = 'Insumos';
+    protected static ?string $breadcrumb = 'Insumos';
 
     protected static ?string $recordTitleAttribute = 'name';
 

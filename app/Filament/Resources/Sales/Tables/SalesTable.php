@@ -4,10 +4,10 @@ namespace App\Filament\Resources\Sales\Tables;
 
 use App\Filament\Exports\SaleExporter;
 use App\Filament\Imports\SaleImporter;
+use App\Models\Sale;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ExportBulkAction;
 use Filament\Actions\ImportAction;
@@ -164,10 +164,14 @@ class SalesTable
 
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make()->requiresConfirmation(),
+                Action::make('anular')
+                    ->label('Anular')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(fn(Sale $record) => $record->status !== 'anulada')
+                    ->action(fn(Sale $record) => $record->anular()),
             ])
-
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

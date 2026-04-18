@@ -19,7 +19,6 @@ class AppointmentObserver
         if (!$recipient) return;
 
         $date = \Carbon\Carbon::parse($appointment->appointment_date)->format('d/m/Y H:i');
-
         $customerName = $appointment->customer?->name ?? 'Sin cliente';
 
         Notification::make()
@@ -33,11 +32,14 @@ class AppointmentObserver
     {
         if (!$appointment->wasChanged('status')) return;
         if ($appointment->status->value !== 'Completada') return;
+        if ($appointment->sale()->exists()) return;
 
-        $period = FiscalPeriod::where('start_date', '<=', now())
-            ->where('end_date', '>=', now())
-            ->where('is_closed', false)
-            ->first();
+        $this->createSaleIfCompleted($appointment);
+    }
+
+    protected function createSaleIfCompleted(Appointment $appointment): void
+    {
+        $period = FiscalPeriod::find(session('active_fiscal_period_id'));
 
         if (!$period) {
             Notification::make()
@@ -48,8 +50,7 @@ class AppointmentObserver
             return;
         }
 
-        $total = $appointment->services->sum('price');
-
+        $total = $appointment->appointmentServices()->sum('price');
         $sale = Sale::create([
             'customer_id'    => $appointment->customer_id,
             'appointment_id' => $appointment->id,

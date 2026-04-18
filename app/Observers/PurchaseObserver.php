@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\Account;
 use App\Models\FiscalPeriod;
 use App\Models\JournalEntry;
+use App\Models\JournalEntryType;
 use App\Models\Purchase;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
@@ -16,15 +17,14 @@ class PurchaseObserver
     public function created(Purchase $purchase): void
     {
         // 1. Guard: periodo activo
-        $period = FiscalPeriod::where('start_date', '<=', now())
-            ->where('end_date', '>=', now())
-            ->first();
+        $period = FiscalPeriod::find(session('active_fiscal_period_id'));
 
         if (!$period) return;
 
         // taxDocument ya existe, lo creó el Resource
         $docNumber = $purchase->taxDocument?->document_number ?? 'S/N';
 
+        $entryType = JournalEntryType::where('name', 'Diario')->firstOrFail();
         $entry = JournalEntry::create([
             'entry_date'       => $purchase->purchase_date,
             'description'      => "Compra - {$docNumber}",
@@ -32,6 +32,7 @@ class PurchaseObserver
             'reference_id'     => $purchase->id,
             'fiscal_period_id' => $period->id,
             'user_id'          => Auth::check() ? Auth::id() : null,
+            'journal_entry_type_id' => $entryType->id,
         ]);
 
         // 5. DÉBITO → cuenta destino (inventario o gasto)

@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\Account;
 use App\Models\FiscalPeriod;
 use App\Models\JournalEntry;
+use App\Models\JournalEntryType;
 use App\Models\Sale;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
@@ -13,9 +14,7 @@ class SaleObserver
 {
     public function created(Sale $sale): void
     {
-        $period = FiscalPeriod::where('start_date', '<=', now())
-            ->where('end_date', '>=', now())
-            ->first();
+        $period = FiscalPeriod::find(session('active_fiscal_period_id'));
 
         if (!$period) return;
 
@@ -44,13 +43,15 @@ class SaleObserver
 
         $docNumber = $sale->taxDocument?->document_number ?? 'S/N';
 
+        $entryType = JournalEntryType::where('name', 'Diario')->firstOrFail();
         $entry = JournalEntry::create([
-            'entry_date'       => now(),
-            'description'      => "Venta {$sale->document_type} - {$docNumber}",
-            'reference_type'   => 'sale',
-            'reference_id'     => $sale->id,
-            'fiscal_period_id' => $period->id,
-            'user_id'          => Auth::check() ? Auth::id() : null,
+            'entry_date'            => now(),
+            'description'           => "Venta {$sale->document_type} - {$docNumber}",
+            'reference_type'        => 'sale',
+            'reference_id'          => $sale->id,
+            'fiscal_period_id'      => $period->id,
+            'user_id'               => Auth::check() ? Auth::id() : null,
+            'journal_entry_type_id' => $entryType->id,
         ]);
 
         // DÉBITO → cobro total (igual en FCF y CCF)

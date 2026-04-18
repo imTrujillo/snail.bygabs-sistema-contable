@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Appointments\Schemas;
 
 use App\Models\AppointmentStatus;
+use App\Models\FiscalPeriod;
+use App\Models\Service;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -19,6 +21,8 @@ class AppointmentForm
 {
     public static function configure(Schema $schema): Schema
     {
+        $period = FiscalPeriod::find(session('active_fiscal_period_id'));
+
         return $schema
             ->components([
 
@@ -34,7 +38,7 @@ class AppointmentForm
                             ->preload()
                             ->required()
                             ->createOptionForm([
-                                \Filament\Forms\Components\TextInput::make('name')
+                                TextInput::make('name')
                                     ->label('Nombre')
                                     ->required(),
                             ])
@@ -54,7 +58,9 @@ class AppointmentForm
                             ->native(false)
                             ->displayFormat('d/m/Y H:i')
                             ->minutesStep(15)
-                            ->minDate(now())
+                            ->default($period?->start_date ?? now())
+                            ->minDate($period?->start_date ?? now())
+                            ->maxDate($period?->end_date ?? now())
                             ->columnSpanFull(),
                     ]),
 
@@ -67,7 +73,8 @@ class AppointmentForm
                             ->label('Estado')
                             ->options(AppointmentStatus::class)
                             ->required()
-                            ->inline(),
+                            ->inline()
+                            ->hiddenOn('create'),
 
                         Textarea::make('notes')
                             ->label('Notas')
@@ -93,7 +100,7 @@ class AppointmentForm
                                     ->required()
                                     ->live()
                                     ->afterStateUpdated(function (Set $set, Get $get) {
-                                        $service = \App\Models\Service::find($get('service_id'));
+                                        $service = Service::find($get('service_id'));
                                         $set('price', $service?->price ?? 0);
                                     }),
 

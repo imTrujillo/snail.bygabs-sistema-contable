@@ -18,7 +18,8 @@ class DatabaseSeeder extends Seeder
             CompanySettingSeeder::class,
             AccountSeeder::class,
             UserSeeder::class,
-            FiscalPeriodSeeder::class
+            FiscalPeriodSeeder::class,
+            JournalEntryTypeSeeder::class
         ]);
     }
 }
