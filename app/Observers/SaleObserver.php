@@ -7,90 +7,112 @@ use App\Models\FiscalPeriod;
 use App\Models\JournalEntry;
 use App\Models\JournalEntryType;
 use App\Models\Sale;
+use App\Models\TaxDocument;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class SaleObserver
 {
     public function created(Sale $sale): void
     {
-        $period = FiscalPeriod::find(session('active_fiscal_period_id'));
+        try {
+            $period = FiscalPeriod::find(session('active_fiscal_period_id'));
+            if (!$period) return;
 
-        if (!$period) return;
+            $isCCF      = $sale->document_type === 'CCF';
+            $ivaAmount  = round($sale->total / 1.13 * 0.13, 2);
+            $baseAmount = round($sale->total - $ivaAmount, 2);
 
-        $isCCF = $sale->document_type === 'CCF';
+            // Crear TaxDocument automáticamente
+            $lastDoc = TaxDocument::where('type', $sale->document_type)
+                ->orderByDesc('correlative_number')
+                ->first();
 
-        // FCF: IVA embebido pero igual se declara
-        // CCF: IVA explícito y desglosado
-        $ivaAmount  = round($sale->total / 1.13 * 0.13, 2);
-        $baseAmount = round($sale->total - $ivaAmount, 2);
+            $nextCorrelative = ($lastDoc?->correlative_number ?? 0) + 1;
+            $series          = 'A';
+            $docNumber       = $series . '-' . str_pad($nextCorrelative, 6, '0', STR_PAD_LEFT);
 
-        // DÉBITO → caja o banco
-        $debitAccount = match ($sale->payment_method) {
-            'Efectivo'      => Account::where('code', '1102')->first(),
-            'Transferencia' => Account::where('code', '1101')->first(),
-            'Tarjeta'       => Account::where('code', '1101')->first(),
-            default         => null,
-        };
+            $taxDoc = TaxDocument::create([
+                'type'               => $sale->document_type,
+                'series'             => $series,
+                'correlative_number' => $nextCorrelative,
+                'document_number'    => $docNumber,
+                'issue_date'         => now(),
+                'customer_id'        => $sale->customer_id,
+                'reference_id'       => $sale->id,
+                'reference_type'     => 'sale',
+                'exempt_amount'      => 0,
+                'non_taxable_amount' => 0,
+                'taxable_amount'     => $baseAmount,
+                'iva_amount'         => $ivaAmount,
+                'total_amount'       => $sale->total,
+                'is_voided'          => false,
+            ]);
 
-        if (!$debitAccount) return;
+            $sale->updateQuietly(['tax_document_id' => $taxDoc->id]);
 
-        $ventasAccount = Account::where('code', '4100')->first();
-        if (!$ventasAccount) return;
+            // Asiento contable
+            $debitAccount = match ($sale->payment_method) {
+                'Efectivo'      => Account::where('code', '1102')->first(),
+                'Transferencia' => Account::where('code', '1101')->first(),
+                'Tarjeta'       => Account::where('code', '1101')->first(),
+                default         => null,
+            };
 
-        $ivaAccount = Account::where('code', '2104-01')->first();
-        if (!$ivaAccount) return;
+            if (!$debitAccount) return;
 
-        $docNumber = $sale->taxDocument?->document_number ?? 'S/N';
+            $ventasAccount = Account::where('code', '4100')->first();
+            if (!$ventasAccount) return;
 
-        $entryType = JournalEntryType::where('name', 'Diario')->firstOrFail();
-        $entry = JournalEntry::create([
-            'entry_date'            => now(),
-            'description'           => "Venta {$sale->document_type} - {$docNumber}",
-            'reference_type'        => 'sale',
-            'reference_id'          => $sale->id,
-            'fiscal_period_id'      => $period->id,
-            'user_id'               => Auth::check() ? Auth::id() : null,
-            'journal_entry_type_id' => $entryType->id,
-        ]);
+            $ivaAccount = Account::where('code', '2104-01')->first();
+            if (!$ivaAccount) return;
 
-        // DÉBITO → cobro total (igual en FCF y CCF)
-        $entry->lines()->create([
-            'account_id'  => $debitAccount->id,
-            'debit'       => $sale->total,
-            'credit'      => 0,
-            'description' => "Cobro {$sale->document_type} - {$docNumber}",
-        ]);
+            $entryType = JournalEntryType::where('name', 'Diario')->first();
+            if (!$entryType) return;
 
-        // CRÉDITO → ingresos por ventas (base sin IVA)
-        $entry->lines()->create([
-            'account_id'  => $ventasAccount->id,
-            'debit'       => 0,
-            'credit'      => $baseAmount,
-            'description' => $isCCF
-                ? "Ingreso por servicio (CCF - base gravada)"
-                : "Ingreso por servicio (FCF)",
-        ]);
+            $entry = JournalEntry::create([
+                'entry_date'            => now(),
+                'description'           => "Venta {$sale->document_type} - {$docNumber}",
+                'reference_type'        => 'sale',
+                'reference_id'          => $sale->id,
+                'fiscal_period_id'      => $period->id,
+                'user_id'               => Auth::id(),
+                'journal_entry_type_id' => $entryType->id,
+            ]);
 
-        // CRÉDITO → IVA por pagar
-        // FCF: IVA embebido que igual se debe declarar al fisco
-        // CCF: IVA débito fiscal explícito
-        $entry->lines()->create([
-            'account_id'  => $ivaAccount->id,
-            'debit'       => 0,
-            'credit'      => $ivaAmount,
-            'description' => $isCCF
-                ? "IVA débito fiscal (CCF)"
-                : "IVA débito fiscal (FCF)",
-        ]);
+            $entry->lines()->create([
+                'account_id'  => $debitAccount->id,
+                'debit'       => $sale->total,
+                'credit'      => 0,
+                'description' => "Cobro {$sale->document_type} - {$docNumber}",
+            ]);
 
-        $recipient = Auth::user();
-        if ($recipient) {
-            Notification::make()
-                ->title('Venta registrada')
-                ->body("Documento **{$docNumber}** ({$sale->document_type}) por \${$sale->total} — Pago: *{$sale->payment_method}*.")
-                ->success()
-                ->sendToDatabase($recipient);
+            $entry->lines()->create([
+                'account_id'  => $ventasAccount->id,
+                'debit'       => 0,
+                'credit'      => $baseAmount,
+                'description' => $isCCF ? "Ingreso CCF - base gravada" : "Ingreso FCF",
+            ]);
+
+            $entry->lines()->create([
+                'account_id'  => $ivaAccount->id,
+                'debit'       => 0,
+                'credit'      => $ivaAmount,
+                'description' => $isCCF ? "IVA débito fiscal (CCF)" : "IVA débito fiscal (FCF)",
+            ]);
+
+            $recipient = Auth::user();
+            if ($recipient) {
+                Notification::make()
+                    ->title('Venta registrada')
+                    ->body("Documento **{$docNumber}** ({$sale->document_type}) por \${$sale->total}.")
+                    ->success()
+                    ->sendToDatabase($recipient);
+            }
+        } catch (Throwable $e) {
+            Log::error('SaleObserver error: ' . $e->getMessage());
         }
     }
 }

@@ -30,6 +30,7 @@ class ExpenseForm
                     TextInput::make('description')
                         ->label('Descripción')
                         ->required()
+                        ->minLength(3)
                         ->maxLength(255)
                         ->columnSpanFull(),
                     Select::make('account_id')
@@ -48,16 +49,18 @@ class ExpenseForm
                         ->helperText('La categoría se asignará automáticamente.')
                         ->live()
                         ->afterStateUpdated(function (Set $set, Get $get) {
+                            $account = \App\Models\Account::find($get('account_id'));
+                            if (!$account) return;
+
                             $map = [
                                 '6100' => 'Administrativo',
                                 '6200' => 'Operativo',
                                 '6300' => 'Otros',
                                 '6400' => 'Otros',
                             ];
-                            $account = \App\Models\Account::find($get('account_id'));
-                            if ($account && isset($map[$account->code])) {
-                                $set('category', $map[$account->code]);
-                            }
+
+                            // Usa el map si existe, si no asigna 'Otros' como fallback
+                            $set('category', $map[$account->code] ?? 'Otros');
                         })
                         ->columnSpan(1),
 
@@ -92,6 +95,7 @@ class ExpenseForm
                         ->required()
                         ->numeric()
                         ->minValue(0.01)
+                        ->maxValue(99999.99)
                         ->step(0.01)
                         ->prefix('$')
                         ->live(onBlur: true)
@@ -123,6 +127,7 @@ class ExpenseForm
 
                     TextInput::make('supplier_name')
                         ->label('Nombre del proveedor')
+                        ->minLength(3)
                         ->maxLength(255)
                         ->visible(fn(Get $get) => $get('document_type') === 'CCF')
                         ->required(fn(Get $get) => $get('document_type') === 'CCF')
@@ -130,10 +135,11 @@ class ExpenseForm
 
                     TextInput::make('supplier_nrc')
                         ->label('NRC del proveedor')
+                        ->regex('/^\d{1,6}-\d$/')   // ← faltaba formato
+                        ->helperText('Formato: 123456-7')
                         ->maxLength(20)
                         ->visible(fn(Get $get) => $get('document_type') === 'CCF')
-                        ->required(fn(Get $get) => $get('document_type') === 'CCF')
-                        ->columnSpan(1),
+                        ->required(fn(Get $get) => $get('document_type') === 'CCF'),
 
                     TextInput::make('iva_amount')
                         ->label('IVA crédito fiscal (13%)')

@@ -23,7 +23,7 @@ class AppointmentObserver
 
         Notification::make()
             ->title('Cita agendada')
-            ->body("Cita para **{$customerName}** el {$date}. Estado: *{$appointment->status->value}*.")
+            ->body("Cita para **{$customerName}** el {$date}. Estado: Pendiente.")
             ->success()
             ->sendToDatabase($recipient);
     }

@@ -5,6 +5,8 @@ namespace App\Filament\Pages\Reports;
 use App\Models\FiscalPeriod;
 use App\Models\JournalEntryLine;
 use BackedEnum;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -19,7 +21,6 @@ class EstadoResultados extends Page implements HasForms
     protected static string|UnitEnum|null $navigationGroup = 'Reportes';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-presentation-chart-line';
     protected static ?string $navigationLabel = 'Estado de Resultados';
-
     protected string $view = 'filament.pages.reports.estado-resultados';
 
     public ?int $fiscal_period_id = null;
@@ -35,7 +36,30 @@ class EstadoResultados extends Page implements HasForms
         ]);
     }
 
-    // Suma todos los movimientos de un type de cuenta en el periodo
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('exportar_pdf')
+                ->label('Exportar PDF')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('gray')
+                ->visible(fn() => (bool) $this->fiscal_period_id)
+                ->action(function () {
+                    $period  = FiscalPeriod::find($this->fiscal_period_id);
+                    $r       = $this->getResultados();
+                    $company = \App\Models\CompanySetting::current();
+
+                    $pdf = Pdf::loadView('filament.pages.reports.pdf.estado-resultados', compact('period', 'r', 'company'))
+                        ->setPaper('letter', 'portrait');
+
+                    return response()->streamDownload(
+                        fn() => print($pdf->output()),
+                        "estado-resultados-{$period->name}.pdf"
+                    );
+                }),
+        ];
+    }
+
     private function sumByType(string $type): float
     {
         if (!$this->fiscal_period_id) return 0;
@@ -48,7 +72,6 @@ class EstadoResultados extends Page implements HasForms
             ->value('total') ?? 0;
     }
 
-    // Suma por subtype específico
     private function sumBySubtype(string $subtype): float
     {
         if (!$this->fiscal_period_id) return 0;
@@ -63,20 +86,31 @@ class EstadoResultados extends Page implements HasForms
 
     public function getResultados(): array
     {
-        $ingresos          = $this->sumByType('Ingreso');
-        $costos            = $this->sumByType('Costo');
-        $utilidad_bruta    = $ingresos - $costos;
-
-        $gastos_admin      = $this->sumBySubtype('Administrativo');
-        $gastos_venta      = $this->sumBySubtype('Venta');
-        $gastos_operativos = $gastos_admin + $gastos_venta;
-        $utilidad_operativa = $utilidad_bruta - $gastos_operativos;
-
+        $ingresos           = $this->sumByType('Ingreso');
+        $costos             = $this->sumByType('Costo');
+        $utilidad_bruta     = $ingresos - $costos;
+        $gastos_admin       = $this->sumBySubtype('Administrativo');
+        $gastos_venta       = $this->sumBySubtype('Venta');
+        $utilidad_operativa = $utilidad_bruta - $gastos_admin - $gastos_venta;
         $gastos_financieros = $this->sumBySubtype('Financiero');
         $utilidad_antes_isr = $utilidad_operativa - $gastos_financieros;
 
-        $isr               = $utilidad_antes_isr * 0.25; // 25% ISR
-        $utilidad_neta     = $utilidad_antes_isr - $isr;
+        // ISR El Salvador: si ingresos > $150,000 → 30% flat
+        // Si no, tabla progresiva
+        if ($utilidad_antes_isr <= 0) {
+            $isr = 0;
+        } elseif ($ingresos > 150000) {
+            $isr = round($utilidad_antes_isr * 0.30, 2);
+        } else {
+            $isr = match (true) {
+                $utilidad_antes_isr <= 4064.00   => 0,
+                $utilidad_antes_isr <= 9142.86   => round(($utilidad_antes_isr - 4064.00) * 0.10, 2),
+                $utilidad_antes_isr <= 22857.14  => round(507.86 + ($utilidad_antes_isr - 9142.86) * 0.20, 2),
+                default                          => round(3230.43 + ($utilidad_antes_isr - 22857.14) * 0.30, 2),
+            };
+        }
+
+        $utilidad_neta = $utilidad_antes_isr - $isr;
 
         return compact(
             'ingresos',
@@ -84,7 +118,6 @@ class EstadoResultados extends Page implements HasForms
             'utilidad_bruta',
             'gastos_admin',
             'gastos_venta',
-            'gastos_operativos',
             'utilidad_operativa',
             'gastos_financieros',
             'utilidad_antes_isr',

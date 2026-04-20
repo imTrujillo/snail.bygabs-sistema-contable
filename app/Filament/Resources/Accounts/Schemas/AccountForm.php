@@ -24,18 +24,18 @@ class AccountForm
                             ->label('Código')
                             ->required()
                             ->maxLength(20)
-                            ->placeholder('Ej: 1101')
-                            ->prefixIcon('heroicon-m-hashtag')
-                            ->helperText('Código único del plan de cuentas')
-                            ->columnSpan(1),
+                            ->unique(table: 'accounts', column: 'code', ignoreRecord: true)
+                            ->regex('/^\d{4}(-\d{2})*$/')   // formato 1101, 1101-01, 1101-01-01
+                            ->helperText('Formato: 1101 o 1101-01')
+                            ->prefixIcon('heroicon-m-hashtag'),
 
                         TextInput::make('name')
                             ->label('Nombre')
                             ->required()
+                            ->minLength(3)
                             ->maxLength(255)
-                            ->placeholder('Ej: Caja General')
-                            ->prefixIcon('heroicon-m-tag')
-                            ->columnSpan(1),
+                            ->unique(table: 'accounts', column: 'name', ignoreRecord: true)
+                            ->prefixIcon('heroicon-m-tag'),
                     ]),
 
                 Section::make('Clasificación')

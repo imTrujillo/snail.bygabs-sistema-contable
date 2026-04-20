@@ -6,6 +6,7 @@ use App\Models\Appointment;
 use App\Models\Customer;
 use App\Models\Expense;
 use App\Models\JournalEntry;
+use App\Models\Payroll;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\Sale;
@@ -20,6 +21,7 @@ use App\Observers\AppointmentObserver;
 use App\Observers\CustomerObserver;
 use App\Observers\ExpenseObserver;
 use App\Observers\JournalEntryObserver;
+use App\Observers\PayrollObserver;
 use App\Observers\ProductObserver;
 use App\Observers\PurchaseObserver;
 use App\Observers\SaleObserver;
@@ -55,6 +57,7 @@ class AppServiceProvider extends ServiceProvider
         Supplier::observe(SupplierObserver::class);
         TaxDocument::observe(TaxDocumentObserver::class);
         JournalEntry::observe(JournalEntryObserver::class);
+        Payroll::observe(PayrollObserver::class);
 
         Field::configureUsing(function (Field $component) {
             $component->translateLabel();

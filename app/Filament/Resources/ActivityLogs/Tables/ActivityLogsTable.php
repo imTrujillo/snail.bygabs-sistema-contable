@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ActivityLogs\Tables;
 
+use App\Models\ActivityLog;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -41,7 +42,7 @@ class ActivityLogsTable
                 SelectFilter::make('log_name')
                     ->label('Módulo')
                     ->options(
-                        \App\Models\ActivityLog::distinct()
+                        ActivityLog::distinct()
                             ->pluck('log_name', 'log_name')
                     ),
             ]);

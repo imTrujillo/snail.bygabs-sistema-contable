@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FiscalPeriods\Schemas;
 
+use App\Models\FiscalPeriod;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -12,57 +13,67 @@ class FiscalPeriodForm
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema
-            ->components([
+        return $schema->components([
 
-                Section::make('Período Fiscal')
-                    ->description('Define el rango de fechas y nombre del período contable.')
-                    ->icon('heroicon-o-calendar')
-                    ->columns(2)
-                    ->schema([
-                        TextInput::make('name')
-                            ->label('Nombre del período')
-                            ->required()
-                            ->maxLength(100)
-                            ->placeholder('Ej: Enero 2025, Q1 2025, Ejercicio 2025...')
-                            ->columnSpanFull(),
+            Section::make('Período Fiscal')
+                ->icon('heroicon-o-calendar')
+                ->columns(2)
+                ->schema([
+                    TextInput::make('name')
+                        ->label('Nombre del período')
+                        ->required()
+                        ->minLength(3)
+                        ->maxLength(100)
+                        ->unique(table: 'fiscal_periods', column: 'name', ignoreRecord: true)
+                        ->placeholder('Ej: Enero 2025')
+                        ->columnSpanFull(),
 
-                        DatePicker::make('start_date')
-                            ->label('Fecha de inicio')
-                            ->required()
-                            ->native(false)
-                            ->displayFormat('d/m/Y')
-                            ->live()
-                            ->afterStateUpdated(function ($state, $set) {
-                                if ($state) {
-                                    $set('end_date', \Carbon\Carbon::parse($state)->endOfMonth()->toDateString());
+                    DatePicker::make('start_date')
+                        ->label('Fecha de inicio')
+                        ->required()
+                        ->native(false)
+                        ->displayFormat('d/m/Y')
+                        ->live()
+                        ->rules(['date'])
+                        ->afterStateUpdated(function ($state, $set) {
+                            if ($state) {
+                                $set('end_date', \Carbon\Carbon::parse($state)->endOfMonth()->toDateString());
+                            }
+                        })
+                        // No debe solapar otro período existente
+                        ->rules([
+                            fn($get, $record) => function ($attribute, $value, $fail) use ($get, $record) {
+                                $overlaps = FiscalPeriod::where('id', '!=', $record?->id)
+                                    ->where(function ($q) use ($value, $get) {
+                                        $q->whereBetween('start_date', [$value, $get('end_date')])
+                                            ->orWhereBetween('end_date', [$value, $get('end_date')]);
+                                    })->exists();
+
+                                if ($overlaps) {
+                                    $fail('Las fechas se solapan con otro período fiscal existente.');
                                 }
-                            })
-                            ->columnSpan(1),
+                            }
+                        ])
+                        ->columnSpan(1),
 
-                        DatePicker::make('end_date')
-                            ->label('Fecha de cierre')
-                            ->required()
-                            ->native(false)
-                            ->displayFormat('d/m/Y')
-                            ->afterOrEqual('start_date')
-                            ->columnSpan(1),
-                    ]),
+                    DatePicker::make('end_date')
+                        ->label('Fecha de cierre')
+                        ->required()
+                        ->native(false)
+                        ->displayFormat('d/m/Y')
+                        ->afterOrEqual('start_date')
+                        ->rules(['date'])
+                        ->columnSpan(1),
+                ]),
 
-                Section::make('Estado del Período')
-                    ->description('Un período cerrado no permite registrar nuevas transacciones.')
-                    ->icon('heroicon-o-lock-closed')
-                    ->schema([
-                        Toggle::make('is_closed')
-                            ->label('Período cerrado')
-                            ->helperText('Al cerrar el período, no se podrán registrar ni modificar transacciones dentro de este rango de fechas.')
-                            ->onIcon('heroicon-m-lock-closed')
-                            ->offIcon('heroicon-m-lock-open')
-                            ->onColor('danger')
-                            ->offColor('success')
-                            ->default(false),
-                    ]),
-
-            ]);
+            Section::make('Estado')
+                ->icon('heroicon-o-lock-closed')
+                ->schema([
+                    Toggle::make('is_closed')
+                        ->label('Período cerrado')
+                        ->disabled()
+                        ->helperText('Usa la acción "Cerrar Período" desde la tabla.'),
+                ]),
+        ]);
     }
 }

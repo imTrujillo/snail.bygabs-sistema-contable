@@ -47,4 +47,9 @@ class FiscalPeriod extends Model
             ))
             ->sum('iva_amount');
     }
+
+    public function hasTransactions(): bool
+    {
+        return $this->journalEntries()->exists();
+    }
 }

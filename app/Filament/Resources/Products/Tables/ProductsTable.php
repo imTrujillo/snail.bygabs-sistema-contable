@@ -54,27 +54,6 @@ class ProductsTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('sale_price')
-                    ->label('Precio venta')
-                    ->money('USD')
-                    ->sortable(),
-
-                TextColumn::make('margin')
-                    ->label('Margen')
-                    ->state(
-                        fn($record): string =>
-                        $record->cost_price > 0
-                            ? round((($record->sale_price - $record->cost_price) / $record->cost_price) * 100, 1) . '%'
-                            : '—'
-                    )
-                    ->badge()
-                    ->color(fn($record): string => match (true) {
-                        $record->cost_price <= 0                                                         => 'gray',
-                        (($record->sale_price - $record->cost_price) / $record->cost_price) < 0.10      => 'danger',
-                        (($record->sale_price - $record->cost_price) / $record->cost_price) < 0.25      => 'warning',
-                        default                                                                          => 'success',
-                    }),
-
                 TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime('d/m/Y')

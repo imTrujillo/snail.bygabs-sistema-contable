@@ -31,6 +31,7 @@ class PurchaseForm
                             ->relationship('supplier', 'name')
                             ->searchable()
                             ->required()
+                            ->preload()
                             ->prefixIcon('heroicon-m-building-storefront')
                             ->columnSpanFull(),
 
@@ -57,6 +58,7 @@ class PurchaseForm
                             ->getOptionLabelFromRecordUsing(fn($record) => "{$record->code} – {$record->name}")
                             ->searchable()
                             ->required()
+                            ->preload()
                             ->prefixIcon('heroicon-m-building-library')
                             ->helperText('Ej: Mercancía (Activo) o Gasto de administración.')
                             ->columnSpan(1),
@@ -80,7 +82,9 @@ class PurchaseForm
                             ->maxLength(50)
                             ->placeholder('Ej: CCF-001234')
                             ->prefixIcon('heroicon-m-hashtag')
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->regex('/^[A-Z]{3}-\d+$/')
+                            ->helperText('Formato: CCF-001234 (3 letras + guion + números)')
                     ]),
 
                 Section::make('Montos')

@@ -21,12 +21,17 @@ class UserForm
                         TextInput::make('name')
                             ->label('Nombre')
                             ->required()
+                            ->minLength(3)
+                            ->maxLength(100)
+                            ->regex('/^[\pL\s]+$/u')
                             ->columnSpanFull(),
 
                         TextInput::make('email')
                             ->label('Correo electrónico')
                             ->email()
-                            ->required(),
+                            ->required()
+                            ->unique(table: 'users', column: 'email', ignoreRecord: true)
+                            ->maxLength(255),
 
                         TextInput::make('phone')
                             ->label('Teléfono')
@@ -46,6 +51,8 @@ class UserForm
                             ->label('Contraseña')
                             ->password()
                             ->required(fn($context) => $context === 'create')
+                            ->minLength(8)
+                            ->confirmed()          // si agregas password_confirmation
                             ->dehydrateStateUsing(fn($state) => filled($state) ? bcrypt($state) : null)
                             ->dehydrated(fn($state) => filled($state)),
                     ]),

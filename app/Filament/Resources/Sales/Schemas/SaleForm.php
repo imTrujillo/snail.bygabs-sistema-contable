@@ -81,6 +81,7 @@ class SaleForm
                             ->required()
                             ->numeric()
                             ->minValue(0.01)
+                            ->maxValue(99999.99)
                             ->step(0.01)
                             ->prefix('$')
                             ->columnSpanFull(),

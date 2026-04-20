@@ -11,6 +11,13 @@ use Illuminate\Support\Facades\Auth;
 
 class PayrollObserver
 {
+    public function creating(Payroll $payroll): void
+    {
+        if (!$payroll->user_id) {
+            $payroll->user_id = Auth::id();
+        }
+    }
+
     public function created(Payroll $payroll): void
     {
         $period = FiscalPeriod::find(session('active_fiscal_period_id'));
@@ -18,6 +25,17 @@ class PayrollObserver
 
         $entryType = JournalEntryType::where('name', 'Diario')->first();
         if (!$entryType) return;
+
+        $payroll->loadMissing('payrollLines');
+
+        $payroll->update([
+            'total_gross' => $payroll->payrollLines->sum('gross_salary'),
+            'total_isss'  => $payroll->payrollLines->sum('isss_deduction'),
+            'total_afp'   => $payroll->payrollLines->sum('afp_deduction'),
+            'total_renta' => $payroll->payrollLines->sum('renta_deduction'),
+            'total_net'   => $payroll->payrollLines->sum('net_salary'),
+        ]);
+
 
         $entry = JournalEntry::create([
             'entry_date'            => $payroll->pay_date,

@@ -3,12 +3,7 @@
 namespace App\Filament\Resources\JournalEntries\Tables;
 
 use App\Filament\Exports\JournalEntryExporter;
-use App\Filament\Imports\JournalEntryImporter;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ExportAction;
-use Filament\Actions\ImportAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -31,6 +26,17 @@ class JournalEntriesTable
                     ->searchable()
                     ->limit(50)
                     ->tooltip(fn($record) => $record->description),
+
+                TextColumn::make('journalEntryType.name')
+                    ->label('Tipo')
+                    ->badge()
+                    ->color(fn(string $state) => match ($state) {
+                        'Apertura' => 'info',
+                        'Diario'   => 'success',
+                        'Ajuste'   => 'warning',
+                        'Cierre'   => 'danger',
+                        default    => 'gray',
+                    }),
 
                 TextColumn::make('fiscalPeriod.name')
                     ->label('Período Fiscal')
@@ -63,6 +69,16 @@ class JournalEntriesTable
                     ->sortable()
                     ->prefix('#')
                     ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('lines_sum_debit')
+                    ->label('Débito')
+                    ->sum('lines', 'debit')
+                    ->money('USD'),
+
+                TextColumn::make('lines_sum_credit')
+                    ->label('Crédito')
+                    ->sum('lines', 'credit')
+                    ->money('USD'),
 
                 TextColumn::make('user.name')
                     ->label('Registrado por')
@@ -111,13 +127,6 @@ class JournalEntriesTable
 
             ->recordActions([
                 ViewAction::make(),
-                DeleteAction::make()->requiresConfirmation(),
-            ])
-
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ])
 
             ->paginated([10, 25, 50])

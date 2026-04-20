@@ -5,14 +5,15 @@ namespace App\Filament\Resources\Customers\Tables;
 use App\Filament\Exports\CustomerExporter;
 use App\Filament\Imports\CustomerImporter;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ImportAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class CustomersTable
@@ -54,30 +55,42 @@ class CustomersTable
                     ->copyMessageDuration(1500)
                     ->toggleable(isToggledHiddenByDefault: true), // ya se muestra en descripción de name
 
-                TextColumn::make('appointments_count')
-                    ->label('# Citas')
-                    ->counts('appointments')
-                    ->sortable()
-                    ->badge()
-                    ->color('info'),
-
                 TextColumn::make('notes')
                     ->label('Notas')
                     ->limit(40)
                     ->tooltip(fn($record) => $record->notes)
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('created_at')
-                    ->label('Registrado')
-                    ->dateTime('d/m/Y')
-                    ->sortable()
+                IconColumn::make('is_contributor')
+                    ->label('Contribuyente')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-building-office-2')
+                    ->falseIcon('heroicon-o-user')
+                    ->trueColor('warning')
+                    ->falseColor('info'),
+
+                TextColumn::make('nrc')
+                    ->label('NRC')
+                    ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('updated_at')
-                    ->label('Actualizado')
-                    ->dateTime('d/m/Y')
+                TextColumn::make('sales_count')
+                    ->label('Ventas')
+                    ->counts('sales')
+                    ->badge()
+                    ->color('success'),
+
+                TextColumn::make('created_at')
+                    ->label('Registrado')
+                    ->date('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                TernaryFilter::make('is_contributor')
+                    ->label('Tipo')
+                    ->trueLabel('Solo contribuyentes')
+                    ->falseLabel('Solo consumidores finales'),
             ])
 
             ->defaultSort('name', 'asc')
@@ -95,8 +108,6 @@ class CustomersTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make()
-                    ->requiresConfirmation(),
             ])
 
             ->toolbarActions([

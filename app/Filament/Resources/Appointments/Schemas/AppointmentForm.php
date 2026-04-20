@@ -37,11 +37,6 @@ class AppointmentForm
                             ->searchable()
                             ->preload()
                             ->required()
-                            ->createOptionForm([
-                                TextInput::make('name')
-                                    ->label('Nombre')
-                                    ->required(),
-                            ])
                             ->columnSpan(1),
 
                         Select::make('user_id')

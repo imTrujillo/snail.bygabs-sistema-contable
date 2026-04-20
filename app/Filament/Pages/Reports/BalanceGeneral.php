@@ -5,6 +5,8 @@ namespace App\Filament\Pages\Reports;
 use App\Models\Account;
 use App\Models\FiscalPeriod;
 use BackedEnum;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -19,7 +21,6 @@ class BalanceGeneral extends Page implements HasForms
     protected static string|UnitEnum|null $navigationGroup = 'Reportes';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-scale';
     protected static ?string $navigationLabel = 'Balance General';
-
     protected string $view = 'filament.pages.reports.balance-general';
 
     public ?int $fiscal_period_id = null;
@@ -35,7 +36,30 @@ class BalanceGeneral extends Page implements HasForms
         ]);
     }
 
-    // Obtiene cuentas hoja de un type con su saldo en el periodo
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('exportar_pdf')
+                ->label('Exportar PDF')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('gray')
+                ->visible(fn() => (bool) $this->fiscal_period_id)
+                ->action(function () {
+                    $period  = FiscalPeriod::find($this->fiscal_period_id);
+                    $data    = $this->getBalanceData();
+                    $company = \App\Models\CompanySetting::current();
+
+                    $pdf = Pdf::loadView('filament.pages.reports.pdf.balance-general', compact('period', 'data', 'company'))
+                        ->setPaper('letter', 'portrait');
+
+                    return response()->streamDownload(
+                        fn() => print($pdf->output()),
+                        "balance-general-{$period->name}.pdf"
+                    );
+                }),
+        ];
+    }
+
     public function getAccountsByType(string $type): \Illuminate\Support\Collection
     {
         if (!$this->fiscal_period_id) return collect();
@@ -54,9 +78,9 @@ class BalanceGeneral extends Page implements HasForms
             ->map(function ($account) {
                 $debit  = $account->journalLines->sum('debit');
                 $credit = $account->journalLines->sum('credit');
-                // Activos: saldo = débito - crédito
-                // Pasivos/Patrimonio: saldo = crédito - débito
-                $balance = in_array($account->type, ['activo'])
+
+                // ✅ fix: comparación con mayúscula
+                $balance = in_array($account->type, ['Activo', 'Costo', 'Gasto'])
                     ? $debit - $credit
                     : $credit - $debit;
 
@@ -67,16 +91,20 @@ class BalanceGeneral extends Page implements HasForms
                     'balance' => $balance,
                 ];
             })
-            ->filter(fn($a) => $a['balance'] != 0); // solo cuentas con movimiento
+            ->filter(fn($a) => $a['balance'] != 0)
+            ->values();
     }
 
     public function getBalanceData(): array
     {
-        $activos_corrientes    = $this->getAccountsByType('Activo')->where('subtype', 'Corriente');
-        $activos_no_corrientes = $this->getAccountsByType('Activo')->where('subtype', 'No Corriente');
-        $pasivos_corrientes    = $this->getAccountsByType('Pasivo')->where('subtype', 'Corriente');
-        $pasivos_no_corrientes = $this->getAccountsByType('Pasivo')->where('subtype', 'No Corriente');
-        $patrimonio            = $this->getAccountsByType('Patrimonio');
+        $activos    = $this->getAccountsByType('Activo');
+        $pasivos    = $this->getAccountsByType('Pasivo');
+        $patrimonio = $this->getAccountsByType('Patrimonio');
+
+        $activos_corrientes    = $activos->where('subtype', 'Corriente')->values();
+        $activos_no_corrientes = $activos->where('subtype', 'No Corriente')->values();
+        $pasivos_corrientes    = $pasivos->where('subtype', 'Corriente')->values();
+        $pasivos_no_corrientes = $pasivos->where('subtype', 'No Corriente')->values();
 
         return [
             'activos_corrientes'    => $activos_corrientes,

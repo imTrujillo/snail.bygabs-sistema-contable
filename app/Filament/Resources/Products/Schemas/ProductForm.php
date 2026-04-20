@@ -22,7 +22,9 @@ class ProductForm
                         TextInput::make('name')
                             ->label('Nombre')
                             ->required()
+                            ->minLength(3)
                             ->maxLength(255)
+                            ->unique(table: 'products', column: 'name', ignoreRecord: true)
                             ->columnSpanFull(),
 
                         Select::make('unit')
@@ -47,9 +49,10 @@ class ProductForm
                             ->label('Precio de costo')
                             ->required()
                             ->numeric()
-                            ->minValue(0)
+                            ->minValue(0.01)
+                            ->maxValue(99999.99)
                             ->step(0.01)
-                            ->prefix('$')
+                            ->prefix('$'),
 
                     ]),
             ]);

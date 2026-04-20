@@ -13,6 +13,7 @@ use Filament\Actions\ExportBulkAction;
 use Filament\Actions\ImportAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\Summarizers\Average;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
@@ -30,12 +31,18 @@ class ServicesTable
                     ->icon('heroicon-m-sparkles')
                     ->description(fn($record) => \Illuminate\Support\Str::limit($record->description, 60)),
 
+                TextColumn::make('description')
+                    ->label('Descripción')
+                    ->limit(50)
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('price')
                     ->label('Precio')
                     ->money('USD')
                     ->sortable()
                     ->summarize([
-                        \Filament\Tables\Columns\Summarizers\Average::make()
+                        Average::make()
                             ->money('USD')
                             ->label('Promedio'),
                     ]),

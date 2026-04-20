@@ -5,6 +5,8 @@ namespace App\Filament\Pages\Reports;
 use App\Models\FiscalPeriod;
 use App\Models\TaxDocument;
 use BackedEnum;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -19,10 +21,8 @@ class LibroVentas extends Page implements HasForms
     protected static string|UnitEnum|null $navigationGroup = 'Reportes';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
     protected static ?string $navigationLabel = 'Libro de Ventas';
-
     protected string $view = 'filament.pages.reports.libro-ventas';
 
-    // Campo del filtro
     public ?int $fiscal_period_id = null;
 
     public function form(Schema $form): Schema
@@ -32,11 +32,35 @@ class LibroVentas extends Page implements HasForms
                 ->label('Periodo Tributario')
                 ->options(FiscalPeriod::orderBy('start_date')->pluck('name', 'id'))
                 ->placeholder('Selecciona un periodo')
-                ->live(), // recarga al cambiar
+                ->live(),
         ]);
     }
 
-    // Documentos del periodo seleccionado
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('exportar_pdf')
+                ->label('Exportar PDF')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('gray')
+                ->visible(fn() => (bool) $this->fiscal_period_id)
+                ->action(function () {
+                    $period    = FiscalPeriod::find($this->fiscal_period_id);
+                    $documents = $this->getDocuments();
+                    $totals    = $this->getTotals();
+                    $company   = \App\Models\CompanySetting::current();
+
+                    $pdf = Pdf::loadView('filament.pages.reports.pdf.libro-ventas', compact('period', 'documents', 'totals', 'company'))
+                        ->setPaper('letter', 'landscape');
+
+                    return response()->streamDownload(
+                        fn() => print($pdf->output()),
+                        "libro-ventas-{$period->name}.pdf"
+                    );
+                }),
+        ];
+    }
+
     public function getDocuments()
     {
         if (!$this->fiscal_period_id) return collect();
@@ -51,17 +75,16 @@ class LibroVentas extends Page implements HasForms
             ->get();
     }
 
-    // Totales para el resumen
-    public function getTotals()
+    public function getTotals(): array
     {
         $docs = $this->getDocuments();
 
         return [
-            'ventas_exentas'    => $docs->sum('exempt_amount'),
-            'ventas_no_grav'    => $docs->sum('non_taxable_amount'),
-            'ventas_gravadas'   => $docs->sum('taxable_amount'),
-            'debito_fiscal'     => $docs->sum('iva_amount'),
-            'total_ventas'      => $docs->sum('total_amount'),
+            'ventas_exentas'  => $docs->sum('exempt_amount'),
+            'ventas_no_grav'  => $docs->sum('non_taxable_amount'),
+            'ventas_gravadas' => $docs->sum('taxable_amount'),
+            'debito_fiscal'   => $docs->sum('iva_amount'),
+            'total_ventas'    => $docs->sum('total_amount'),
         ];
     }
 }

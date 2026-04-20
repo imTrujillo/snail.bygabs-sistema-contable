@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Customers\Schemas;
 
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -24,17 +23,23 @@ class CustomerForm
                     TextInput::make('name')
                         ->label('Nombre')
                         ->required()
+                        ->minLength(3)
                         ->maxLength(255)
                         ->columnSpanFull(),
 
                     TextInput::make('phone')
                         ->label('Teléfono')
                         ->tel()
-                        ->maxLength(20),
+                        ->required()
+                        ->regex('/^[67]\d{7}$/') // formato El Salvador: 8 dígitos, empieza en 6 o 7
+                        ->maxLength(8)
+                        ->helperText('Ej: 71234567'),
+
 
                     TextInput::make('email')
                         ->label('Correo electrónico')
                         ->email()
+                        ->unique(table: 'customers', column: 'email', ignoreRecord: true)
                         ->maxLength(255),
 
                     Textarea::make('notes')
@@ -57,12 +62,19 @@ class CustomerForm
                         ->label('NRC')
                         ->visible(fn(Get $get) => $get('is_contributor'))
                         ->required(fn(Get $get) => $get('is_contributor'))
+                        ->unique(table: 'customers', column: 'nrc', ignoreRecord: true)
+                        ->regex('/^\d{1,6}-\d$/')
+                        ->helperText('Formato: 123456-7')
                         ->maxLength(20),
 
                     TextInput::make('nit')
                         ->label('NIT')
                         ->visible(fn(Get $get) => $get('is_contributor'))
-                        ->maxLength(20),
+                        ->required(fn(Get $get) => $get('is_contributor'))
+                        ->unique(table: 'customers', column: 'nit', ignoreRecord: true)
+                        ->regex('/^\d{4}-\d{6}-\d{3}-\d$/')
+                        ->helperText('Formato: 0614-290786-102-3')
+                        ->maxLength(17)
                 ]),
         ]);
     }

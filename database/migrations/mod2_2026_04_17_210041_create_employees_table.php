@@ -20,6 +20,9 @@ return new class extends Migration
             $table->string('afp')->nullable();              // AFP
             $table->decimal('base_salary', 10, 2);
             $table->enum('pay_frequency', ['Semanal', 'Quincenal', 'Mensual'])->default('Mensual');
+            $table->enum('payment_method', ['Efectivo', 'Transferencia'])->default('Efectivo');
+            $table->string('bank_name')->nullable();
+            $table->string('bank_account')->nullable();
             $table->boolean('is_active')->default(true);
             $table->date('hire_date')->nullable();
             $table->timestamps();

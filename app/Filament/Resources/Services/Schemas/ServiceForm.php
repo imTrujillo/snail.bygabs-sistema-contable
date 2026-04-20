@@ -22,7 +22,9 @@ class ServiceForm
                         TextInput::make('name')
                             ->label('Nombre del servicio')
                             ->required()
+                            ->minLength(3)
                             ->maxLength(255)
+                            ->unique(table: 'services', column: 'name', ignoreRecord: true)
                             ->columnSpanFull(),
 
                         Textarea::make('description')
@@ -43,24 +45,19 @@ class ServiceForm
                             ->label('Precio')
                             ->required()
                             ->numeric()
-                            ->minValue(0)
+                            ->minValue(0.01)
+                            ->maxValue(99999.99)
                             ->step(0.01)
-                            ->prefix('$')
-                            ->columnSpan(1),
+                            ->prefix('$'),
 
                         TextInput::make('duration_minutes')
                             ->label('Duración (minutos)')
                             ->required()
                             ->numeric()
                             ->minValue(1)
-                            ->suffix('min')
-                            ->helperText(
-                                fn($state): string =>
-                                $state > 0
-                                    ? floor($state / 60) . 'h ' . ($state % 60) . 'min'
-                                    : ''
-                            )
-                            ->columnSpan(1),
+                            ->maxValue(480)
+                            ->integer()
+                            ->suffix('min'),
                     ]),
 
             ]);

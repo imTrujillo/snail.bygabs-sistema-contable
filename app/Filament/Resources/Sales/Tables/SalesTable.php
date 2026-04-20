@@ -13,7 +13,7 @@ use Filament\Actions\ExportBulkAction;
 use Filament\Actions\ImportAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -36,30 +36,32 @@ class SalesTable
                             : 'Sin cita asociada'
                     ),
 
-                BadgeColumn::make('document_type')
+                TextColumn::make('document_type')
                     ->label('Documento')
-                    ->colors([
-                        'info'    => 'FCF',
-                        'warning' => 'CCF',
-                    ]),
+                    ->badge()
+                    ->color(fn(string $state) => match ($state) {
+                        'FCF' => 'info',
+                        'CCF' => 'warning',
+                    }),
 
                 TextColumn::make('total')
                     ->label('Total')
                     ->money('USD')
                     ->sortable()
                     ->summarize([
-                        \Filament\Tables\Columns\Summarizers\Sum::make()
+                        Sum::make()
                             ->money('USD')
                             ->label('Total ventas'),
                     ]),
 
-                BadgeColumn::make('payment_method')
+                TextColumn::make('payment_method')
                     ->label('Pago')
-                    ->colors([
-                        'success' => 'Efectivo',
-                        'info'    => 'Transferencia',
-                        'warning' => 'Tarjeta',
-                    ])
+                    ->badge()
+                    ->color(fn(string $state) => match ($state) {
+                        'Efectivo'      => 'success',
+                        'Transferencia' => 'info',
+                        'Tarjeta'       => 'warning',
+                    })
                     ->icons([
                         'heroicon-m-banknotes'          => 'Efectivo',
                         'heroicon-m-arrow-right-circle' => 'Transferencia',
