@@ -16,6 +16,7 @@ class Purchase extends Model
     protected $fillable = [
         'supplier_id',
         'tax_document_id',
+        'document_type',
         'purchase_date',
         'exempt_amount',
         'non_taxable_amount',
@@ -41,7 +42,7 @@ class Purchase extends Model
         return LogOptions::defaults()
             ->logFillable()
             ->logOnlyDirty()
-            ->setDescriptionForEvent(fn(string $eventName) => "Venta {$eventName}");
+            ->setDescriptionForEvent(fn(string $eventName) => "Compra {$eventName}");
     }
 
     public function supplier(): BelongsTo

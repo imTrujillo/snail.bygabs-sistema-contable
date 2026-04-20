@@ -56,7 +56,7 @@ class User extends Authenticatable
         return LogOptions::defaults()
             ->logFillable()
             ->logOnlyDirty()
-            ->setDescriptionForEvent(fn(string $eventName) => "Venta {$eventName}");
+            ->setDescriptionForEvent(fn(string $eventName) => "Usuario {$eventName}");
     }
 
     public function role()

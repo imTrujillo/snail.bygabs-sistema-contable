@@ -19,7 +19,7 @@ class SaleObserver
     {
         try {
             $period = FiscalPeriod::find(session('active_fiscal_period_id'));
-            if (!$period) return;
+            if (!$period || $period->is_closed) return;
 
             $isCCF      = $sale->document_type === 'CCF';
             $ivaAmount  = round($sale->total / 1.13 * 0.13, 2);
@@ -39,7 +39,7 @@ class SaleObserver
                 'series'             => $series,
                 'correlative_number' => $nextCorrelative,
                 'document_number'    => $docNumber,
-                'issue_date'         => now(),
+                'issue_date'         => $sale->appointment?->appointment_date ?? now(),
                 'customer_id'        => $sale->customer_id,
                 'reference_id'       => $sale->id,
                 'reference_type'     => 'sale',
@@ -73,7 +73,7 @@ class SaleObserver
             if (!$entryType) return;
 
             $entry = JournalEntry::create([
-                'entry_date'            => now(),
+                'entry_date'            => $sale->appointment?->appointment_date ?? now(),
                 'description'           => "Venta {$sale->document_type} - {$docNumber}",
                 'reference_type'        => 'sale',
                 'reference_id'          => $sale->id,

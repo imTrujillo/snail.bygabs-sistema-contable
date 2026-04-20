@@ -24,7 +24,7 @@ class Supplier extends Model
         return LogOptions::defaults()
             ->logFillable()
             ->logOnlyDirty()
-            ->setDescriptionForEvent(fn(string $eventName) => "Venta {$eventName}");
+            ->setDescriptionForEvent(fn(string $eventName) => "Proveedor {$eventName}");
     }
 
     public function purchases(): HasMany

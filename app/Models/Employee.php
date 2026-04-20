@@ -37,7 +37,7 @@ class Employee extends Model
         return LogOptions::defaults()
             ->logFillable()
             ->logOnlyDirty()
-            ->setDescriptionForEvent(fn(string $eventName) => "Usuario {$eventName}");
+            ->setDescriptionForEvent(fn(string $eventName) => "Empleado {$eventName}");
     }
 
     public function isssDeduction(): float

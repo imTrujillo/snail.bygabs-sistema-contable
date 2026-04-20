@@ -17,8 +17,8 @@ class ExpenseObserver
     {
         try {
             $period = FiscalPeriod::find(session('active_fiscal_period_id'));
-            if (!$period) {
-                Log::warning('ExpenseObserver: sin período activo', ['expense_id' => $expense->id]);
+            if (!$period || $period->is_closed) {
+                Log::warning('ExpenseObserver: sin período activo o cerrado', ['expense_id' => $expense->id]);
                 return;
             }
 

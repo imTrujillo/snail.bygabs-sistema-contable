@@ -10,32 +10,34 @@ use App\Models\Purchase;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 
-use function Symfony\Component\Clock\now;
-
 class PurchaseObserver
 {
-    public function created(Purchase $purchase): void
+    public function saved(Purchase $purchase): void
     {
-        // 1. Guard: periodo activo
-        $period = FiscalPeriod::find(session('active_fiscal_period_id'));
+        // ✅ Solo al crear, no en cada edición
+        if (!$purchase->wasRecentlyCreated) return;
 
+        // ✅ Evitar duplicados si se llama dos veces
+        if ($purchase->journalEntry()->exists()) return;
+
+        $period = FiscalPeriod::find(session('active_fiscal_period_id'));
         if (!$period) return;
 
-        // taxDocument ya existe, lo creó el Resource
-        $docNumber = $purchase->taxDocument?->document_number ?? 'S/N';
+        // ✅ Ahora sí tiene valor porque saved se dispara después de persistir todo
+        $docNumber = $purchase->document_number ?? 'S/N';
 
         $entryType = JournalEntryType::where('name', 'Diario')->firstOrFail();
+
         $entry = JournalEntry::create([
-            'entry_date'       => $purchase->purchase_date,
-            'description'      => "Compra - {$docNumber}",
-            'reference_type'   => 'purchase',
-            'reference_id'     => $purchase->id,
-            'fiscal_period_id' => $period->id,
-            'user_id'          => Auth::check() ? Auth::id() : null,
+            'entry_date'            => $purchase->purchase_date,
+            'description'           => "Compra - {$docNumber}",
+            'reference_type'        => 'purchase',
+            'reference_id'          => $purchase->id,
+            'fiscal_period_id'      => $period->id,
+            'user_id'               => Auth::check() ? Auth::id() : null,
             'journal_entry_type_id' => $entryType->id,
         ]);
 
-        // 5. DÉBITO → cuenta destino (inventario o gasto)
         $entry->lines()->create([
             'account_id'  => $purchase->account_id,
             'debit'       => $purchase->taxable_amount,
@@ -43,10 +45,8 @@ class PurchaseObserver
             'description' => 'Compra de materiales',
         ]);
 
-        // 6. DÉBITO → IVA crédito fiscal (solo si tiene CCF)
         if ($purchase->credit_fiscal > 0) {
             $ivaAccount = Account::where('code', '1106')->first();
-
             if ($ivaAccount) {
                 $entry->lines()->create([
                     'account_id'  => $ivaAccount->id,
@@ -57,9 +57,7 @@ class PurchaseObserver
             }
         }
 
-        // 7. CRÉDITO → Proveedores
         $proveedoresAccount = Account::where('code', '2105')->first();
-
         if (!$proveedoresAccount) return;
 
         $entry->lines()->create([
@@ -71,8 +69,7 @@ class PurchaseObserver
 
         $recipient = Auth::user();
         if ($recipient) {
-            $docNumber  = $purchase->taxDocument?->document_number ?? 'S/N';
-            $proveedor  = $purchase->supplier?->name ?? 'Sin proveedor';
+            $proveedor = $purchase->supplier?->name ?? 'Sin proveedor';
 
             Notification::make()
                 ->title('Compra registrada')

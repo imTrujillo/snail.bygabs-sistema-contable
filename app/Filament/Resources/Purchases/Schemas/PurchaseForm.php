@@ -83,8 +83,9 @@ class PurchaseForm
                             ->placeholder('Ej: CCF-001234')
                             ->prefixIcon('heroicon-m-hashtag')
                             ->columnSpanFull()
-                            ->regex('/^[A-Z]{3}-\d+$/')
-                            ->helperText('Formato: CCF-001234 (3 letras + guion + números)')
+                            ->regex('/^CCF-\d+$/')
+                            ->helperText('Formato: CCF-001234 (prefijo fijo CCF + números)')
+
                     ]),
 
                 Section::make('Montos')

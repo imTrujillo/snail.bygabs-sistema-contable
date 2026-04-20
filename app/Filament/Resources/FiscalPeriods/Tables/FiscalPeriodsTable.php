@@ -83,11 +83,17 @@ class FiscalPeriodsTable
                         try {
                             $closing = $service->close($record);
 
+                            if (session('active_fiscal_period_id') == $record->id) {
+                                session()->forget('active_fiscal_period_id');
+                            }
+
                             Notification::make()
                                 ->title("Período {$record->name} cerrado")
                                 ->body("Resultado neto: $" . number_format($closing->net_result, 2))
                                 ->success()
                                 ->send();
+
+                            return redirect('/admin/select-fiscal-period');
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Error al cerrar período')
