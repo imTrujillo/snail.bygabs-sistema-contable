@@ -10,10 +10,12 @@ php artisan view:clear
 php artisan cache:clear
 
 php artisan config:cache
-# SIN route:cache - Filament v4 no es compatible
+php artisan route:cache    # ← Agregar esto, Filament v4 SÍ es compatible
+php artisan view:cache     # ← Agregar esto también
 
 php artisan storage:link --quiet || true
 
 php artisan queue:work --tries=3 --timeout=90 &
 
+php artisan route:list | grep admin
 php artisan serve --host=0.0.0.0 --port=$PORT
