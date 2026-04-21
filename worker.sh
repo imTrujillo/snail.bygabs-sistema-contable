@@ -10,7 +10,7 @@ php artisan view:clear
 php artisan cache:clear
 
 php artisan config:cache
-php artisan route:cache
+# SIN route:cache - Filament v4 no es compatible
 
 php artisan storage:link --quiet || true
 
