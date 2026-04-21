@@ -2,14 +2,18 @@
 
 chmod -R 777 /app/storage /app/bootstrap/cache
 
-# Republicar assets de Filament (se pierden en el COPY final del build)
+# Republicar assets de Filament
 php artisan filament:upgrade
 
-# Limpiar y regenerar caches en el contenedor final
+# Limpiar TODO el cache primero
 php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+php artisan cache:clear
+
+# Regenerar caches limpios
 php artisan config:cache
 php artisan route:cache
-php artisan view:clear
 php artisan view:cache
 php artisan storage:link --quiet || true
 
