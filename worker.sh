@@ -21,4 +21,17 @@ php artisan storage:link --quiet || true
 
 php artisan queue:work --tries=3 --timeout=90 &
 
+# Test de que el login responde sin error
+php artisan route:list --name=filament.admin.auth.login
+echo "--- TEST LOGIN ROUTE ---"
+php -r "
+require '/app/vendor/autoload.php';
+\$app = require '/app/bootstrap/app.php';
+\$kernel = \$app->make(Illuminate\Contracts\Http\Kernel::class);
+\$request = Illuminate\Http\Request::create('/admin/login', 'GET');
+\$response = \$kernel->handle(\$request);
+echo 'Status: ' . \$response->getStatusCode() . PHP_EOL;
+echo substr(\$response->getContent(), 0, 500) . PHP_EOL;
+" 2>&1
+echo "--- END TEST ---"
 php artisan serve --host=0.0.0.0 --port=$PORT
