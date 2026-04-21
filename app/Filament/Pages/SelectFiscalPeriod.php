@@ -22,6 +22,11 @@ class SelectFiscalPeriod extends Page implements HasForms
 
     public array $data = [];
 
+    public static function canAccess(): bool
+    {
+        return auth()->check();
+    }
+
     public function mount(): void
     {
         $this->form->fill();
