@@ -105,10 +105,10 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-                EnsureActiveFiscalPeriod::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
+                EnsureActiveFiscalPeriod::class,
             ])
             ->databaseNotifications()
             ->navigationGroups([
