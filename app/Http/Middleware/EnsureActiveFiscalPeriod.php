@@ -10,6 +10,10 @@ class EnsureActiveFiscalPeriod
 {
     public function handle(Request $request, Closure $next)
     {
+        if (!auth()->guard('web')->check()) {
+            return $next($request);
+        }
+
         $excluded = [
             'admin/select-fiscal-period',  // slug correcto
             'admin/login',
