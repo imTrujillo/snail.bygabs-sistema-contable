@@ -4,6 +4,11 @@
             "cmds": [
                 "install-php-extensions ctype curl dom fileinfo filter hash mbstring openssl pcre pdo session tokenizer xml pdo_mysql intl zip bcmath"
             ]
+        },
+        "install:composer": {
+            "cmds": [
+                "composer install --optimize-autoloader --no-scripts --no-interaction --ignore-platform-reqs"
+            ]
         }
     }
 }
