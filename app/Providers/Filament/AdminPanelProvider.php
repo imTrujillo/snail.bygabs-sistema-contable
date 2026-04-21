@@ -52,20 +52,34 @@ class AdminPanelProvider extends PanelProvider
                 ],
             ])
             ->font('Cinzel', provider: GoogleFontProvider::class)
-            ->brandLogo(
-                fn() =>
-                CompanySetting::current()->logo && file_exists(public_path('storage/' . CompanySetting::current()->logo))
-                    ? asset('storage/' . CompanySetting::current()->logo)
-                    : asset('/logo.jpeg')
-            )
-            ->favicon(
-                fn() =>
-                CompanySetting::current()->logo && file_exists(public_path('storage/' . CompanySetting::current()->logo))
-                    ? asset('storage/' . CompanySetting::current()->logo)
-                    : asset('/logo.png')
-            )
+            ->brandLogo(function () {
+                try {
+                    $setting = CompanySetting::current();
+                    if ($setting?->logo && file_exists(public_path('storage/' . $setting->logo))) {
+                        return asset('storage/' . $setting->logo);
+                    }
+                } catch (\Exception $e) {
+                }
+                return asset('/logo.jpeg');
+            })
+            ->favicon(function () {
+                try {
+                    $setting = CompanySetting::current();
+                    if ($setting?->logo && file_exists(public_path('storage/' . $setting->logo))) {
+                        return asset('storage/' . $setting->logo);
+                    }
+                } catch (\Exception $e) {
+                }
+                return asset('/logo.png');
+            })
+            ->brandName(function () {
+                try {
+                    return CompanySetting::current()?->name ?? config('app.name');
+                } catch (\Exception $e) {
+                    return config('app.name');
+                }
+            })
             ->brandLogoHeight('3rem')
-            ->brandName(fn() => CompanySetting::current()?->name ?? config('app.name'))
             ->darkMode(false)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -104,7 +118,70 @@ class AdminPanelProvider extends PanelProvider
                 'Reportes',
                 'Configuración'
             ])
-            ->plugins([])
+            ->plugins([
+                AuthUIEnhancerPlugin::make()
+            ])
+            ->renderHook(
+                'panels::body.start',
+                fn() => request()->routeIs('filament.admin.auth.login') ? new HtmlString('
+                    <div id="caracol-branding-left">
+                        <img src="/logo.jpeg" alt="Caracol Studio Logo">
+                    </div>
+                    <style>
+                        /* Ocultar logos por defecto de Laravel en Login */
+                        .fi-simple-layout img[alt*="Laravel"], .fi-logo { display: none !important; }
+
+                        #caracol-branding-left {
+                            position: fixed;
+                            left: 0;
+                            top: 0;
+                            width: 50%;
+                            height: 100vh;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            z-index: 50;
+                            pointer-events: none;
+                        }
+
+                        #caracol-branding-left img {
+                            width: 380px; /* Tamaño profesional */
+                            height: auto;
+                            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+                            opacity: 0.95;
+                        }
+
+                        @media (max-width: 1024px) {
+                            #caracol-branding-left img {
+                                display: none;
+                            }
+                        }
+
+                        .caracol-auth-header {
+                            width: 100%;
+                            text-align: center;
+                            margin-bottom: 2rem;
+                        }
+
+                        .caracol-auth-header h1 {
+                            font-family: "Cinzel", serif;
+                            font-size: 3rem;
+                            color: #473919;
+                            font-weight: bold;
+                            text-transform: lowercase;
+                            letter-spacing: 2px;
+                        }
+                    </style>
+                ') : null
+            )
+            ->renderHook(
+                'panels::auth.login.form.before',
+                fn() => new HtmlString('
+                    <div class="caracol-auth-header">
+                        <h1>caracol studio</h1>
+                    </div>
+                ')
+            )
             ->viteTheme('resources/css/filament/admin/theme.css')
         ;
     }
