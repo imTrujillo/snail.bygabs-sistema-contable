@@ -108,7 +108,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                // EnsureActiveFiscalPeriod::class,
+                EnsureActiveFiscalPeriod::class,
             ])
             ->databaseNotifications()
             ->navigationGroups([

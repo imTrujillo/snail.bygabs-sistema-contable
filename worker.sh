@@ -15,6 +15,9 @@ php artisan migrate --force
 
 php artisan storage:link --quiet || true
 
+mkdir -p /app/storage/framework/sessions
+chmod -R 777 /app/storage/framework/sessions
+
 php artisan queue:work --tries=3 --timeout=90 &
 
 php artisan serve --host=0.0.0.0 --port=$PORT
