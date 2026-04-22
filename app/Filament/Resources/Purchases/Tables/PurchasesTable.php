@@ -5,9 +5,6 @@ namespace App\Filament\Resources\Purchases\Tables;
 use App\Filament\Exports\PurchaseExporter;
 use App\Filament\Imports\PurchaseImporter;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ExportBulkAction;
 use Filament\Actions\ImportAction;
@@ -33,7 +30,7 @@ class PurchasesTable
                     ->icon('heroicon-m-building-storefront')
                     ->description(
                         fn($record) => $record->document_number
-                            ? $record->document_type . ' · ' . $record->document_number
+                            ?  $record->document_number
                             : null
                     ),
 
@@ -176,13 +173,10 @@ class PurchasesTable
 
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make()->requiresConfirmation(),
             ])
 
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
                     ExportBulkAction::make()
                         ->exporter(PurchaseExporter::class),
                 ]),

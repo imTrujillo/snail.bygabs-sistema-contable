@@ -3,9 +3,11 @@
 namespace App\Filament\Resources\Purchases\Schemas;
 
 use App\Models\FiscalPeriod;
+use App\Models\Product;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -88,69 +90,94 @@ class PurchaseForm
 
                     ]),
 
-                Section::make('Montos')
-                    ->description('Desglose fiscal de los montos de la compra.')
+                Section::make('Ítems de la compra')
+                    ->description('Detalle de insumos recibidos.')
+                    ->icon('heroicon-o-archive-box')
+                    ->schema([
+                        Repeater::make('items')
+                            ->relationship('items')
+                            ->label('')
+                            ->schema([
+                                Select::make('product_id')
+                                    ->label('Insumo')
+                                    ->options(Product::orderBy('name')->pluck('name', 'id'))
+                                    ->searchable()
+                                    ->nullable()
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        $product = Product::find($state);
+                                        if ($product) {
+                                            $set('description', $product->name);
+                                            $set('unit_price', $product->cost_price);
+                                            $quantity = floatval($get('quantity') ?: 1);
+                                            $set('subtotal', round($quantity * $product->cost_price, 2));
+                                        }
+                                    })
+                                    ->columnSpan(2),
+
+                                TextInput::make('description')
+                                    ->label('Descripción')
+                                    ->required()
+                                    ->columnSpan(2),
+
+                                TextInput::make('quantity')
+                                    ->label('Cantidad')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->default(1)
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        $subtotal = round(floatval($state) * floatval($get('unit_price')), 2);
+                                        $set('subtotal', $subtotal);
+                                    })
+                                    ->columnSpan(1),
+
+                                TextInput::make('unit_price')
+                                    ->label('Precio unitario')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->default(0)
+                                    ->disabled()
+                                    ->dehydrated()
+                                    ->columnSpan(1),
+
+                                TextInput::make('subtotal')
+                                    ->label('Subtotal')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->disabled()
+                                    ->dehydrated()
+                                    ->columnSpan(1),
+                            ])
+                            ->columns(7)
+                            ->addActionLabel('Agregar ítem')
+                            ->defaultItems(1),
+                    ])->columnSpanFull(),
+
+
+                // Reemplaza toda la sección Montos por esto:
+                Section::make('Montos adicionales')
+                    ->description('Solo si hay montos exentos o no sujetos a IVA.')
                     ->icon('heroicon-o-banknotes')
                     ->columns(2)
                     ->schema([
                         TextInput::make('exempt_amount')
                             ->label('Monto exento')
-                            ->required()
                             ->numeric()
                             ->minValue(0)
                             ->step(0.01)
                             ->prefix('$')
                             ->default(0)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(fn($set, $get) => self::recalcTotal($set, $get)),
+                            ->columnSpan(1),
 
                         TextInput::make('non_taxable_amount')
                             ->label('Monto no sujeto')
-                            ->required()
                             ->numeric()
                             ->minValue(0)
                             ->step(0.01)
                             ->prefix('$')
                             ->default(0)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(fn($set, $get) => self::recalcTotal($set, $get)),
-
-                        TextInput::make('taxable_amount')
-                            ->label('Monto gravado')
-                            ->required()
-                            ->numeric()
-                            ->minValue(0)
-                            ->step(0.01)
-                            ->prefix('$')
-                            ->default(0)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function ($state, $set, $get) {
-                                // Calcular IVA 13% automáticamente
-                                $iva = round(floatval($state) * 0.13, 2);
-                                $set('credit_fiscal', $iva);
-                                self::recalcTotal($set, $get);
-                            }),
-
-                        TextInput::make('credit_fiscal')
-                            ->label('Crédito fiscal (IVA 13%)')
-                            ->required()
-                            ->numeric()
-                            ->prefix('$')
-                            ->default(0)
-                            ->readOnly()
-                            ->helperText('Calculado automáticamente al ingresar el monto gravado'),
-
-                        TextInput::make('total_amount')
-                            ->label('Total')
-                            ->required()
-                            ->numeric()
-                            ->minValue(0)
-                            ->step(0.01)
-                            ->prefix('$')
-                            ->default(0)
-                            ->readOnly()
-                            ->helperText('Calculado automáticamente: exento + no sujeto + gravado + IVA')
-                            ->columnSpanFull(),
+                            ->columnSpan(1),
                     ]),
 
                 Section::make('Notas')

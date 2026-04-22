@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Purchases;
 
 use App\Filament\Resources\Purchases\Pages\CreatePurchase;
-use App\Filament\Resources\Purchases\Pages\EditPurchase;
 use App\Filament\Resources\Purchases\Pages\ListPurchases;
 use App\Filament\Resources\Purchases\Schemas\PurchaseForm;
 use App\Filament\Resources\Purchases\Tables\PurchasesTable;
@@ -51,7 +50,6 @@ class PurchaseResource extends Resource
         return [
             'index' => ListPurchases::route('/'),
             'create' => CreatePurchase::route('/create'),
-            'edit' => EditPurchase::route('/{record}/edit'),
         ];
     }
 
@@ -67,11 +65,11 @@ class PurchaseResource extends Resource
 
     public static function canEdit($record): bool
     {
-        return Auth::user()?->isAdmin();
+        return false;
     }
 
     public static function canDelete($record): bool
     {
-        return Auth::user()?->isAdmin();
+        return false;
     }
 }

@@ -54,6 +54,14 @@ class ProductForm
                             ->step(0.01)
                             ->prefix('$'),
 
+                        TextInput::make('stock')
+                            ->label('Stock actual')
+                            ->numeric()
+                            ->readOnly()
+                            ->default(0)
+                            ->prefixIcon('heroicon-m-archive-box')
+                            ->helperText('Se actualiza automáticamente al registrar compras.')
+                            ->columnSpan(1),
                     ]),
             ]);
     }
