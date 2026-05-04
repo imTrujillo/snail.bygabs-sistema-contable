@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Payrolls\Schemas;
 
 use App\Models\Employee;
 use App\Models\FiscalPeriod;
+use App\Support\SalaryRentaRetentionElSalvador;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -41,7 +42,7 @@ class PayrollForm
                             'Mensual' => 'Mensual',
                         ])
                         ->required()
-                        ->live(),   // para ajustar salario según frecuencia si se necesita
+                        ->live(),
 
                     DatePicker::make('pay_date')
                         ->label('Fecha de pago')
@@ -79,14 +80,22 @@ class PayrollForm
                                         return;
                                     }
 
-                                    $gross = $employee->base_salary;
+                                    $gross = (float) $employee->base_salary;
                                     $isss = $employee->isssDeduction();
                                     $afp = $employee->afpDeduction();
-                                    $net = $employee->netSalary();
+                                    $periodType = filled($get('../../period_type')) ? $get('../../period_type') : ($get('../../../period_type') ?: 'Mensual');
+                                    $rent = SalaryRentaRetentionElSalvador::retentionForPeriod(
+                                        $gross,
+                                        $isss,
+                                        $afp,
+                                        (string) $periodType
+                                    );
+                                    $net = round(max(0.0, $gross - $isss - $afp - $rent), 2);
 
                                     $set('gross_salary', $gross);
                                     $set('isss_deduction', $isss);
                                     $set('afp_deduction', $afp);
+                                    $set('renta_deduction', $rent);
                                     $set('net_salary', $net);
                                 })
                                 ->columnSpan(2),
@@ -119,13 +128,16 @@ class PayrollForm
                                 ->columnSpan(1),
 
                             TextInput::make('renta_deduction')
-                                ->label('Renta ISR')
+                                ->label('Renta ISR (retención)')
                                 ->numeric()
                                 ->prefix('$')
                                 ->default(0)
-                                ->minValue(0)
+                                ->disabled()
+                                ->dehydrated()
                                 ->step(0.01)
-                                ->helperText('Ingresar manualmente según tabla ISR')
+                                ->helperText(
+                                    'Tablas de retención MH (mensual/quincenal/semanal) aplicadas sobre gravada después de ISSS y AFP.'
+                                )
                                 ->columnSpan(1),
 
                             TextInput::make('net_salary')

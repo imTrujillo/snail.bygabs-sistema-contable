@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Purchases\Schemas;
 
+use App\Models\Account;
 use App\Models\FiscalPeriod;
 use App\Models\Product;
 use Filament\Forms\Components\DatePicker;
@@ -57,12 +58,16 @@ class PurchaseForm
                                     ->whereIn('type', ['Activo', 'Gasto', 'Costo']) // ✅ solo cuentas destino válidas para compras
                                     ->orderBy('code'),
                             )
+                            ->default(fn () => Account::query()->where('code', '5100')->value('id'))
                             ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->code} – {$record->name}")
                             ->searchable()
                             ->required()
                             ->preload()
                             ->prefixIcon('heroicon-m-building-library')
-                            ->helperText('Ej: Mercancía (Activo) o Gasto de administración.')
+                            ->helperText(
+                                'Para que el Estado de Resultados refleje costo de venta, use la cuenta 5100 (Costo de venta). '.
+                                'Use Mercancía (1103) solo si capitaliza inventario y no expone costo en el ER.'
+                            )
                             ->columnSpan(1),
                     ]),
 

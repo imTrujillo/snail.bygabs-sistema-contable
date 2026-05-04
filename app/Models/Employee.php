@@ -23,6 +23,7 @@ class Employee extends Model
         'is_active',
         'hire_date',
         'payment_method',
+        'bank_name',
         'bank_account',
     ];
 

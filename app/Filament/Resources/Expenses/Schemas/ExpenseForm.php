@@ -113,6 +113,12 @@ class ExpenseForm
                         ->label('Tipo de documento')
                         ->inline()
                         ->live()
+                        ->default('FCF')
+                        ->afterStateUpdated(function (Set $set, $state) {
+                            if ($state !== 'CCF') {
+                                $set('supplier_id', null);
+                            }
+                        })
                         ->options([
                             'FCF' => 'Consumidor Final (FCF)',
                             'CCF' => 'Crédito Fiscal (CCF)',
@@ -127,21 +133,15 @@ class ExpenseForm
                         ])
                         ->columnSpanFull(),
 
-                    TextInput::make('supplier_name')
-                        ->label('Nombre del proveedor')
-                        ->minLength(3)
-                        ->maxLength(255)
+                    Select::make('supplier_id')
+                        ->label('Proveedor (CCF)')
+                        ->relationship('supplier', 'name')
+                        ->searchable()
+                        ->preload()
                         ->visible(fn (Get $get) => $get('document_type') === 'CCF')
                         ->required(fn (Get $get) => $get('document_type') === 'CCF')
-                        ->columnSpan(1),
-
-                    TextInput::make('supplier_nrc')
-                        ->label('NRC del proveedor')
-                        ->regex('/^\d{1,6}-\d$/')   // ← faltaba formato
-                        ->helperText('Formato: 123456-7')
-                        ->maxLength(20)
-                        ->visible(fn (Get $get) => $get('document_type') === 'CCF')
-                        ->required(fn (Get $get) => $get('document_type') === 'CCF'),
+                        ->helperText('Debe estar dado de alta en Proveedores (NRC y razón únicos). El nombre/NRC se copian al guardar.')
+                        ->columnSpanFull(),
 
                     TextInput::make('iva_amount')
                         ->label('IVA crédito fiscal (13%)')

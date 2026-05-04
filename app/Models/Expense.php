@@ -22,6 +22,7 @@ class Expense extends Model
         'payment_account_id',
         'notes',
         'document_type',
+        'supplier_id',
         'supplier_name',
         'supplier_nrc',
         'iva_amount',
@@ -50,9 +51,27 @@ class Expense extends Model
         return $this->belongsTo(Account::class, 'payment_account_id');
     }
 
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
+    }
+
     public function journalEntry(): HasOne
     {
         return $this->hasOne(JournalEntry::class, 'reference_id')
             ->where('reference_type', 'expense');
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Expense $expense) {
+            if ($expense->supplier_id) {
+                $expense->loadMissing('supplier');
+                if ($expense->supplier) {
+                    $expense->supplier_name = $expense->supplier->name;
+                    $expense->supplier_nrc = $expense->supplier->nrc;
+                }
+            }
+        });
     }
 }

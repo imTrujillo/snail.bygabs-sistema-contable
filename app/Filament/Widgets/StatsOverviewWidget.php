@@ -8,66 +8,85 @@ use App\Models\Sale;
 use App\Models\TaxDocument;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Schema;
 
 class StatsOverviewWidget extends BaseWidget
 {
     protected static ?int $sort = 1;
 
-    protected function getStats(): array
+    private function issuedSaleDocuments(): Builder
     {
-        $clientes = Customer::count();
+        return TaxDocument::query()
+            ->where('reference_type', 'sale')
+            ->where('is_voided', false)
+            ->whereHas('sale', function (Builder $sq) {
+                if (Schema::hasColumn('sales', 'status')) {
+                    $sq->where('status', '!=', 'anulada');
+                }
+            });
+    }
 
-        $facturas = TaxDocument::count();
+    /** Ventas con documento fiscal usan fecha de emisión; sin documento, cae en created_at de la venta. */
+    private function sumSalesForDate(\Carbon\CarbonInterface $date): float
+    {
+        $fromDocs = (float) $this->issuedSaleDocuments()
+            ->whereDate('issue_date', $date)
+            ->sum('total_amount');
 
-        $activeSales = Sale::query()->when(
-            Schema::hasColumn('sales', 'status'),
-            fn ($q) => $q->where('status', '!=', 'anulada')
-        );
-
-        $hoy = (float) $activeSales
-            ->whereDate('created_at', today())
-            ->sum('total');
-
-        $ayer = (float) $activeSales
-            ->whereDate('created_at', today()->subDay())
-            ->sum('total');
-
-        $ultimos7 = collect(range(6, 0))->map(
-            fn (int $d) => (float) $activeSales
-                ->whereDate('created_at', today()->subDays($d))
-                ->sum('total')
-        )->toArray();
-
-        $delta = $ayer > 0 ? round((($hoy - $ayer) / $ayer) * 100, 1) : null;
-
-        $ingresos = Sale::query()
+        $fromOrphans = (float) Sale::query()
             ->when(
                 Schema::hasColumn('sales', 'status'),
                 fn ($q) => $q->where('status', '!=', 'anulada')
             )
+            ->whereNull('tax_document_id')
+            ->whereDate('created_at', $date)
             ->sum('total');
 
-        $citas = Appointment::count();
+        return $fromDocs + $fromOrphans;
+    }
 
-        // Sparklines: últimas 6 semanas
-        $ventasSemanas = collect(range(5, 0))->map(
-            fn ($i) => Sale::query()
+    protected function getStats(): array
+    {
+        $clientes = Customer::count();
+
+        $facturas = TaxDocument::query()->where('is_voided', false)->count();
+
+        $hoy = $this->sumSalesForDate(today());
+        $ayer = $this->sumSalesForDate(today()->subDay());
+
+        $ultimos7 = collect(range(6, 0))->map(
+            fn (int $d) => $this->sumSalesForDate(today()->subDays($d))
+        )->toArray();
+
+        $delta = $ayer > 0 ? round((($hoy - $ayer) / $ayer) * 100, 1) : null;
+
+        $ingresos = (float) $this->issuedSaleDocuments()->sum('total_amount')
+            + (float) Sale::query()
                 ->when(
                     Schema::hasColumn('sales', 'status'),
                     fn ($q) => $q->where('status', '!=', 'anulada')
                 )
-                ->whereBetween('created_at', [
+                ->whereNull('tax_document_id')
+                ->sum('total');
+
+        $citas = Appointment::count();
+
+        $ventasSemanas = collect(range(5, 0))->map(
+            fn ($i) => (float) $this->issuedSaleDocuments()
+                ->whereBetween('issue_date', [
                     now()->subWeeks($i + 1)->startOfWeek(),
                     now()->subWeeks($i)->endOfWeek(),
-                ])->sum('total')
+                ])->sum('total_amount')
         )->toArray();
 
         $facturasSemanas = collect(range(5, 0))->map(
-            fn ($i) => TaxDocument::whereBetween('created_at', [
-                now()->subWeeks($i + 1)->startOfWeek(),
-                now()->subWeeks($i)->endOfWeek(),
-            ])->count()
+            fn ($i) => TaxDocument::query()
+                ->where('is_voided', false)
+                ->whereBetween('issue_date', [
+                    now()->subWeeks($i + 1)->startOfWeek(),
+                    now()->subWeeks($i)->endOfWeek(),
+                ])->count()
         )->toArray();
 
         $clientesSemanas = collect(range(5, 0))->map(
@@ -97,13 +116,13 @@ class StatsOverviewWidget extends BaseWidget
                 ->chart($ultimos7),
 
             Stat::make('Facturas', $facturas)
-                ->description('Total de facturas emitidas')
+                ->description('Documentos fiscales activos')
                 ->descriptionIcon('heroicon-m-document-text')
                 ->color('success')
                 ->chart($facturasSemanas),
 
             Stat::make('Ingresos', '$'.number_format($ingresos, 2))
-                ->description('Ingresos totales')
+                ->description('Total facturado (documentos de venta)')
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->color('warning')
                 ->chart($ventasSemanas),

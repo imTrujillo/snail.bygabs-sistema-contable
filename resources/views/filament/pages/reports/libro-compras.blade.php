@@ -44,7 +44,7 @@
                                     {{ \Carbon\Carbon::parse($purchase->purchase_date)->format('d-M-y') }}
                                 </td>
                                 <td class="border p-2">
-                                    {{ $purchase->taxDocument?->document_number ?? 'S/D' }}
+                                    {{ $purchase->document_number ?: ($purchase->taxDocument?->document_number ?? 'S/D') }}
                                 </td>
                                 <td class="border p-2">{{ $purchase->supplier?->name }}</td>
                                 <td class="border p-2 text-right">

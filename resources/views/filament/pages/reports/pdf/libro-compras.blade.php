@@ -125,7 +125,7 @@
             @forelse($purchases as $purchase)
                 <tr>
                     <td>{{ \Carbon\Carbon::parse($purchase->purchase_date)->format('d/m/Y') }}</td>
-                    <td>{{ $purchase->taxDocument?->document_number ?? 'S/D' }}</td>
+                    <td>{{ $purchase->document_number ?: ($purchase->taxDocument?->document_number ?? 'S/D') }}</td>
                     <td>{{ $purchase->supplier?->name }}</td>
                     <td class="right">${{ number_format($purchase->exempt_amount, 2) }}</td>
                     <td class="right">${{ number_format($purchase->non_taxable_amount, 2) }}</td>

@@ -12,9 +12,12 @@ use Filament\Actions\ExportAction;
 use Filament\Actions\ExportBulkAction;
 use Filament\Actions\ImportAction;
 use Filament\Actions\ViewAction;
+use Filament\Notifications\Notification;
+use Filament\Support\Exceptions\Halt;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use Illuminate\Support\Collection;
 
 class SuppliersTable
 {
@@ -27,9 +30,9 @@ class SuppliersTable
                     ->searchable()
                     ->sortable()
                     ->icon('heroicon-m-building-storefront')
-                    ->description(fn($record) => collect([
-                        $record->nrc ? 'NRC: ' . $record->nrc : null,
-                        $record->nit ? 'NIT: ' . $record->nit : null,
+                    ->description(fn ($record) => collect([
+                        $record->nrc ? 'NRC: '.$record->nrc : null,
+                        $record->nit ? 'NIT: '.$record->nit : null,
                     ])->filter()->join(' · ')),
 
                 TextColumn::make('phone')
@@ -84,15 +87,15 @@ class SuppliersTable
             ->filters([
                 Filter::make('has_nit')
                     ->label('Con NIT registrado')
-                    ->query(fn($query) => $query->whereNotNull('nit')->where('nit', '!=', '')),
+                    ->query(fn ($query) => $query->whereNotNull('nit')->where('nit', '!=', '')),
 
                 Filter::make('has_purchases')
                     ->label('Con compras registradas')
-                    ->query(fn($query) => $query->has('purchases')),
+                    ->query(fn ($query) => $query->has('purchases')),
 
                 Filter::make('no_purchases')
                     ->label('Sin compras aún')
-                    ->query(fn($query) => $query->doesntHave('purchases')),
+                    ->query(fn ($query) => $query->doesntHave('purchases')),
             ])
 
             ->headerActions([
@@ -108,12 +111,24 @@ class SuppliersTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                DeleteAction::make()->requiresConfirmation(),
+                DeleteAction::make()
+                    ->requiresConfirmation()
+                    ->disabled(fn ($record) => $record->purchases()->exists()),
             ])
 
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->before(function (Collection $records): void {
+                            if ($records->contains(fn ($record) => $record->purchases()->exists())) {
+                                Notification::make()
+                                    ->danger()
+                                    ->title('No se puede eliminar')
+                                    ->body('Uno o más proveedores tienen compras asociadas.')
+                                    ->send();
+                                throw new Halt;
+                            }
+                        }),
                     ExportBulkAction::make()
                         ->exporter(SupplierExporter::class),
                 ]),

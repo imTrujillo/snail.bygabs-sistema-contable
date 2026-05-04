@@ -3,12 +3,10 @@
 namespace App\Filament\Resources\Employees\Tables;
 
 use App\Filament\Exports\EmployeeExporter;
-use App\Filament\Imports\EmployeeImporter;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ExportBulkAction;
-use Filament\Actions\ImportAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -21,9 +19,6 @@ class EmployeesTable
     {
         return $table
             ->headerActions([
-                ImportAction::make()
-                    ->importer(EmployeeImporter::class)
-                    ->label('Importar'),
                 ExportAction::make()
                     ->exporter(EmployeeExporter::class)
                     ->label('Exportar'),

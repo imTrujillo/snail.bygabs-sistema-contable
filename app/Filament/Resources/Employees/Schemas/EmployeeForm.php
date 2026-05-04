@@ -88,26 +88,30 @@ class EmployeeForm
                         ->numeric()
                         ->prefix('$')
                         ->required()
+                        ->live(onBlur: true)
                         ->step(0.01)
-                        ->minValue(365.00)
+                        ->minValue(fn (Get $get): float => (($get('pay_frequency') ?? 'Mensual') === 'Mensual') ? 365.00 : 0.01)
                         ->maxValue(99999.99)
-                        ->helperText('Salario mínimo El Salvador: $365.00')
+                        ->helperText(fn (Get $get) => (($get('pay_frequency') ?? 'Mensual') === 'Mensual')
+                            ? 'Salario mínimo nacional (mensual): $365.'
+                            : 'Registre la remuneración correspondiente al período de pago seleccionado; el umbral legal de $365 aplica según tabla mensual.')
                         ->columnSpan(1),
 
                     Select::make('pay_frequency')
                         ->label('Frecuencia de pago')
                         ->options([
-                            'Semanal'   => 'Semanal',
+                            'Semanal' => 'Semanal',
                             'Quincenal' => 'Quincenal',
-                            'Mensual'   => 'Mensual',
+                            'Mensual' => 'Mensual',
                         ])
                         ->required()
+                        ->live()
                         ->columnSpan(1),
 
                     Select::make('payment_method')
                         ->label('Método de pago')
                         ->options([
-                            'Efectivo'      => 'Efectivo',
+                            'Efectivo' => 'Efectivo',
                             'Transferencia' => 'Transferencia',
                         ])
                         ->required()
@@ -119,8 +123,8 @@ class EmployeeForm
                         ->label('Banco')
                         ->placeholder('Ej: Banco Agrícola, Davivienda...')
                         ->maxLength(100)
-                        ->visible(fn(Get $get) => $get('payment_method') === 'Transferencia')
-                        ->required(fn(Get $get) => $get('payment_method') === 'Transferencia')
+                        ->visible(fn (Get $get) => $get('payment_method') === 'Transferencia')
+                        ->required(fn (Get $get) => $get('payment_method') === 'Transferencia')
                         ->columnSpan(1),
 
                     TextInput::make('bank_account')
@@ -128,8 +132,8 @@ class EmployeeForm
                         ->placeholder('Número de cuenta bancaria')
                         ->minLength(10)
                         ->maxLength(30)
-                        ->visible(fn(Get $get) => $get('payment_method') === 'Transferencia')
-                        ->required(fn(Get $get) => $get('payment_method') === 'Transferencia')
+                        ->visible(fn (Get $get) => $get('payment_method') === 'Transferencia')
+                        ->required(fn (Get $get) => $get('payment_method') === 'Transferencia')
                         ->columnSpan(1),
                 ]),
         ]);
