@@ -20,11 +20,15 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
 
     protected static string|UnitEnum|null $navigationGroup = 'Configuración';
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-circle';
 
     protected static ?string $modelLabel = 'Usuario';
+
     protected static ?string $pluralModelLabel = 'Usuarios';
+
     protected static ?string $navigationLabel = 'Usuarios';
+
     protected static ?string $breadcrumb = 'Usuarios';
 
     protected static ?string $recordTitleAttribute = 'name';
@@ -72,6 +76,10 @@ class UserResource extends Resource
 
     public static function canDelete($record): bool
     {
-        return Auth::user()?->isAdmin();
+        if (! Auth::user()?->isAdmin()) {
+            return false;
+        }
+
+        return (int) $record->id !== (int) Auth::id();
     }
 }

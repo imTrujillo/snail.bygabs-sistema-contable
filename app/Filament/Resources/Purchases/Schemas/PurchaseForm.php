@@ -52,12 +52,12 @@ class PurchaseForm
                             ->relationship(
                                 name: 'account',
                                 titleAttribute: 'name',
-                                modifyQueryUsing: fn($query) => $query
+                                modifyQueryUsing: fn ($query) => $query
                                     ->where('is_group', false)
                                     ->whereIn('type', ['Activo', 'Gasto', 'Costo']) // ✅ solo cuentas destino válidas para compras
                                     ->orderBy('code'),
                             )
-                            ->getOptionLabelFromRecordUsing(fn($record) => "{$record->code} – {$record->name}")
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->code} – {$record->name}")
                             ->searchable()
                             ->required()
                             ->preload()
@@ -86,7 +86,8 @@ class PurchaseForm
                             ->prefixIcon('heroicon-m-hashtag')
                             ->columnSpanFull()
                             ->regex('/^CCF-\d+$/')
-                            ->helperText('Formato: CCF-001234 (prefijo fijo CCF + números)')
+                            ->unique(table: 'purchases', column: 'document_number', ignoreRecord: true)
+                            ->helperText('Formato: CCF-001234. Debe ser único y no repetirse en documentos fiscales de ventas.'),
 
                     ]),
 
@@ -103,6 +104,7 @@ class PurchaseForm
                                     ->options(Product::orderBy('name')->pluck('name', 'id'))
                                     ->searchable()
                                     ->nullable()
+                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                     ->live()
                                     ->afterStateUpdated(function ($state, $set, $get) {
                                         $product = Product::find($state);
@@ -153,7 +155,6 @@ class PurchaseForm
                             ->addActionLabel('Agregar ítem')
                             ->defaultItems(1),
                     ])->columnSpanFull(),
-
 
                 // Reemplaza toda la sección Montos por esto:
                 Section::make('Montos adicionales')

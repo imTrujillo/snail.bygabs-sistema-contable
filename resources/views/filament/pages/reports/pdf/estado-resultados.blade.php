@@ -114,6 +114,10 @@
             <span>(-) Gastos Financieros</span>
             <span>${{ number_format($r['gastos_financieros'], 2) }}</span>
         </div>
+        <div class="row text-red">
+            <span>(-) Gastos no operativos</span>
+            <span>${{ number_format($r['gastos_no_operativos'], 2) }}</span>
+        </div>
 
         <div class="row subtotal">
             <span>(=) Utilidad antes de ISR</span>

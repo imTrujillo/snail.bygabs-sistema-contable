@@ -3,13 +3,13 @@
 namespace App\Filament\Resources\Purchases\Tables;
 
 use App\Filament\Exports\PurchaseExporter;
-use App\Filament\Imports\PurchaseImporter;
+use Carbon\Carbon;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ExportBulkAction;
-use Filament\Actions\ImportAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
@@ -29,8 +29,8 @@ class PurchasesTable
                     ->sortable()
                     ->icon('heroicon-m-building-storefront')
                     ->description(
-                        fn($record) => $record->document_number
-                            ?  $record->document_number
+                        fn ($record) => $record->document_number
+                            ? $record->document_number
                             : null
                     ),
 
@@ -38,7 +38,7 @@ class PurchasesTable
                     ->label('Documento')
                     ->colors([
                         'warning' => 'CCF',
-                        'info'    => 'FCF',
+                        'info' => 'FCF',
                     ]),
 
                 TextColumn::make('purchase_date')
@@ -46,8 +46,8 @@ class PurchasesTable
                     ->date('d/m/Y')
                     ->sortable()
                     ->description(
-                        fn($record): string => $record->purchase_date
-                            ? \Carbon\Carbon::parse($record->purchase_date)->diffForHumans()
+                        fn ($record): string => $record->purchase_date
+                            ? Carbon::parse($record->purchase_date)->diffForHumans()
                             : ''
                     ),
 
@@ -79,7 +79,7 @@ class PurchasesTable
                     ->label('Total')
                     ->money('USD')
                     ->sortable()
-                    ->weight(\Filament\Support\Enums\FontWeight::Bold)
+                    ->weight(FontWeight::Bold)
                     ->summarize([
                         Sum::make()->money('USD')->label('Total compras'),
                     ]),
@@ -93,7 +93,7 @@ class PurchasesTable
                 TextColumn::make('notes')
                     ->label('Notas')
                     ->limit(35)
-                    ->tooltip(fn($record) => $record->notes)
+                    ->tooltip(fn ($record) => $record->notes)
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('created_at')
@@ -144,17 +144,18 @@ class PurchasesTable
                     ])
                     ->query(function ($query, array $data) {
                         return $query
-                            ->when($data['from'], fn($q) => $q->whereDate('purchase_date', '>=', $data['from']))
-                            ->when($data['until'], fn($q) => $q->whereDate('purchase_date', '<=', $data['until']));
+                            ->when($data['from'], fn ($q) => $q->whereDate('purchase_date', '>=', $data['from']))
+                            ->when($data['until'], fn ($q) => $q->whereDate('purchase_date', '<=', $data['until']));
                     })
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['from'] ?? null) {
-                            $indicators['from'] = 'Desde: ' . \Carbon\Carbon::parse($data['from'])->format('d/m/Y');
+                            $indicators['from'] = 'Desde: '.Carbon::parse($data['from'])->format('d/m/Y');
                         }
                         if ($data['until'] ?? null) {
-                            $indicators['until'] = 'Hasta: ' . \Carbon\Carbon::parse($data['until'])->format('d/m/Y');
+                            $indicators['until'] = 'Hasta: '.Carbon::parse($data['until'])->format('d/m/Y');
                         }
+
                         return $indicators;
                     }),
             ])
@@ -162,10 +163,6 @@ class PurchasesTable
             ->filtersFormColumns(3)
 
             ->headerActions([
-                ImportAction::make()
-                    ->importer(PurchaseImporter::class)
-                    ->label('Importar'),
-
                 ExportAction::make()
                     ->exporter(PurchaseExporter::class)
                     ->label('Exportar'),

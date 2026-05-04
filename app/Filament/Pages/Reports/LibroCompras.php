@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Models\CompanySetting;
 use App\Models\FiscalPeriod;
 use App\Models\Purchase;
 use App\Models\TaxDocument;
@@ -20,8 +21,11 @@ class LibroCompras extends Page implements HasForms
     use InteractsWithForms;
 
     protected static string|UnitEnum|null $navigationGroup = 'Reportes';
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar-square';
+
     protected static ?string $navigationLabel = 'Libro de Compras';
+
     protected string $view = 'filament.pages.reports.libro-compras';
 
     public ?int $fiscal_period_id = null;
@@ -44,15 +48,15 @@ class LibroCompras extends Page implements HasForms
                 ->label('Exportar PDF')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('gray')
-                ->visible(fn() => (bool) $this->fiscal_period_id)
+                ->visible(fn () => (bool) $this->fiscal_period_id)
                 ->action(function () {
-                    $period    = FiscalPeriod::find($this->fiscal_period_id);
+                    $period = FiscalPeriod::find($this->fiscal_period_id);
                     $purchases = $this->getPurchases();
-                    $totals    = $this->getTotals();
-                    $company   = \App\Models\CompanySetting::current();
-                    $debitoFiscal  = $this->getDebitoFiscalPeriodo();
+                    $totals = $this->getTotals();
+                    $company = CompanySetting::current();
+                    $debitoFiscal = $this->getDebitoFiscalPeriodo();
                     $creditoFiscal = $totals['credito_fiscal'];
-                    $ivaPagar      = $debitoFiscal - $creditoFiscal;
+                    $ivaPagar = $debitoFiscal - $creditoFiscal;
 
                     $pdf = Pdf::loadView('filament.pages.reports.pdf.libro-compras', compact(
                         'period',
@@ -65,7 +69,7 @@ class LibroCompras extends Page implements HasForms
                     ))->setPaper('letter', 'landscape');
 
                     return response()->streamDownload(
-                        fn() => print($pdf->output()),
+                        fn () => print ($pdf->output()),
                         "libro-compras-{$period->name}.pdf"
                     );
                 }),
@@ -74,7 +78,9 @@ class LibroCompras extends Page implements HasForms
 
     public function getPurchases()
     {
-        if (!$this->fiscal_period_id) return collect();
+        if (! $this->fiscal_period_id) {
+            return collect();
+        }
 
         $period = FiscalPeriod::find($this->fiscal_period_id);
 
@@ -89,21 +95,24 @@ class LibroCompras extends Page implements HasForms
         $purchases = $this->getPurchases();
 
         return [
-            'exentas'        => $purchases->sum('exempt_amount'),
-            'no_gravadas'    => $purchases->sum('non_taxable_amount'),
-            'gravadas'       => $purchases->sum('taxable_amount'),
+            'exentas' => $purchases->sum('exempt_amount'),
+            'no_gravadas' => $purchases->sum('non_taxable_amount'),
+            'gravadas' => $purchases->sum('taxable_amount'),
             'credito_fiscal' => $purchases->sum('credit_fiscal'),
-            'total'          => $purchases->sum('total_amount'),
+            'total' => $purchases->sum('total_amount'),
         ];
     }
 
     public function getDebitoFiscalPeriodo(): float
     {
-        if (!$this->fiscal_period_id) return 0;
+        if (! $this->fiscal_period_id) {
+            return 0;
+        }
 
         $period = FiscalPeriod::find($this->fiscal_period_id);
 
         return TaxDocument::whereIn('type', ['FCF', 'CCF'])
+            ->where('reference_type', 'sale')
             ->whereBetween('issue_date', [$period->start_date, $period->end_date])
             ->where('is_voided', false)
             ->sum('iva_amount');

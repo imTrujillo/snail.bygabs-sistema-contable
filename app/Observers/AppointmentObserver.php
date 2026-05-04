@@ -5,20 +5,21 @@ namespace App\Observers;
 use App\Models\Appointment;
 use App\Models\FiscalPeriod;
 use App\Models\Sale;
+use App\Models\SaleItem;
+use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 
 class AppointmentObserver
 {
-    /**
-     * Handle the Appointment "created" event.
-     */
     public function created(Appointment $appointment): void
     {
         $recipient = Auth::user();
-        if (!$recipient) return;
+        if (! $recipient) {
+            return;
+        }
 
-        $date = \Carbon\Carbon::parse($appointment->appointment_date)->format('d/m/Y H:i');
+        $date = Carbon::parse($appointment->appointment_date)->format('d/m/Y H:i');
         $customerName = $appointment->customer?->name ?? 'Sin cliente';
 
         Notification::make()
@@ -30,9 +31,15 @@ class AppointmentObserver
 
     public function updated(Appointment $appointment): void
     {
-        if (!$appointment->wasChanged('status')) return;
-        if ($appointment->status->value !== 'Completada') return;
-        if ($appointment->sale()->exists()) return;
+        if (! $appointment->wasChanged('status')) {
+            return;
+        }
+        if ($appointment->status->value !== 'Completada') {
+            return;
+        }
+        if ($appointment->sale()->exists()) {
+            return;
+        }
 
         $this->createSaleIfCompleted($appointment);
     }
@@ -41,29 +48,43 @@ class AppointmentObserver
     {
         $period = FiscalPeriod::find(session('active_fiscal_period_id'));
 
-        if (!$period) {
+        if (! $period) {
             Notification::make()
                 ->title('Sin período fiscal activo')
                 ->body('No se pudo registrar la venta automáticamente.')
                 ->warning()
                 ->sendToDatabase(Auth::user());
+
             return;
         }
 
         $total = $appointment->appointmentServices()->sum('price');
+        $paymentMethod = $appointment->payment_method ?? 'Efectivo';
+
         $sale = Sale::create([
-            'customer_id'    => $appointment->customer_id,
+            'customer_id' => $appointment->customer_id,
             'appointment_id' => $appointment->id,
-            'total'          => $total,
-            'payment_method' => 'Efectivo',
-            'document_type'  => $appointment->customer->is_contributor ? 'CCF' : 'FCF',
+            'total' => $total,
+            'payment_method' => $paymentMethod,
+            'document_type' => $appointment->customer->is_contributor ? 'CCF' : 'FCF',
+            'status' => 'vigente',
         ]);
+
+        foreach ($appointment->appointmentServices as $line) {
+            SaleItem::create([
+                'sale_id' => $sale->id,
+                'service_id' => $line->service_id,
+                'price' => $line->price,
+                'quantity' => 1,
+                'subtotal' => $line->price,
+            ]);
+        }
 
         $recipient = Auth::user();
         if ($recipient) {
             Notification::make()
                 ->title('Venta generada automáticamente')
-                ->body("Cita completada → Venta #{$sale->id} por \${$total}.")
+                ->body("Cita completada → Venta #{$sale->id} por \${$total} ({$paymentMethod}).")
                 ->success()
                 ->sendToDatabase($recipient);
         }

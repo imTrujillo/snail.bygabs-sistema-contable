@@ -8,6 +8,7 @@ use App\Filament\Resources\Appointments\Pages\ListAppointments;
 use App\Filament\Resources\Appointments\Schemas\AppointmentForm;
 use App\Filament\Resources\Appointments\Tables\AppointmentsTable;
 use App\Models\Appointment;
+use App\Models\AppointmentStatus;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -20,11 +21,15 @@ class AppointmentResource extends Resource
     protected static ?string $model = Appointment::class;
 
     protected static string|UnitEnum|null $navigationGroup = 'Operativo';
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
 
     protected static ?string $modelLabel = 'Cita';
+
     protected static ?string $pluralModelLabel = 'Citas';
+
     protected static ?string $navigationLabel = 'Citas';
+
     protected static ?string $breadcrumb = 'Citas';
 
     protected static ?string $recordTitleAttribute = 'appointment_date';
@@ -57,11 +62,11 @@ class AppointmentResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
-        return $record->status->value !== 'Completada';
+        return $record->status !== AppointmentStatus::Completada && $record->status !== AppointmentStatus::Cancelada;
     }
 
     public static function canDelete(Model $record): bool
     {
-        return $record->status->value !== 'Completada';
+        return $record->status !== AppointmentStatus::Completada;
     }
 }

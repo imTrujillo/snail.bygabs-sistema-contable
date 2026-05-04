@@ -3,16 +3,15 @@
 namespace App\Filament\Resources\Appointments\Tables;
 
 use App\Filament\Exports\AppointmentExporter;
-use App\Filament\Imports\AppointmentImporter;
 use App\Models\Appointment;
 use App\Models\AppointmentStatus;
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ExportAction;
-use Filament\Actions\ImportAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\BadgeColumn;
@@ -27,9 +26,6 @@ class AppointmentsTable
     {
         return $table
             ->headerActions([
-                ImportAction::make()
-                    ->importer(AppointmentImporter::class)
-                    ->label('Importar'),
                 ExportAction::make()
                     ->exporter(AppointmentExporter::class)
                     ->label('Exportar'),
@@ -54,7 +50,7 @@ class AppointmentsTable
                     ->sortable()
                     ->icon('heroicon-m-calendar')
                     ->description(
-                        fn($record): string => $record->appointment_date
+                        fn ($record): string => $record->appointment_date
                             ? $record->appointment_date->diffForHumans()
                             : ''
                     ),
@@ -63,15 +59,20 @@ class AppointmentsTable
                     ->label('Estado')
                     ->sortable()
                     ->colors([
-                        'danger'  => AppointmentStatus::Pendiente,
-                        'danger'   => AppointmentStatus::Cancelada,
-                        'success'     => AppointmentStatus::Completada,
+                        'warning' => AppointmentStatus::Pendiente,
+                        'danger' => AppointmentStatus::Cancelada,
+                        'success' => AppointmentStatus::Completada,
                     ]),
+
+                TextColumn::make('payment_method')
+                    ->label('Pago')
+                    ->badge()
+                    ->toggleable(),
 
                 TextColumn::make('notes')
                     ->label('Notas')
                     ->limit(40)
-                    ->tooltip(fn($record) => $record->notes)
+                    ->tooltip(fn ($record) => $record->notes)
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('created_at')
@@ -114,17 +115,18 @@ class AppointmentsTable
                     ])
                     ->query(function ($query, array $data) {
                         return $query
-                            ->when($data['from'], fn($q) => $q->whereDate('appointment_date', '>=', $data['from']))
-                            ->when($data['until'], fn($q) => $q->whereDate('appointment_date', '<=', $data['until']));
+                            ->when($data['from'], fn ($q) => $q->whereDate('appointment_date', '>=', $data['from']))
+                            ->when($data['until'], fn ($q) => $q->whereDate('appointment_date', '<=', $data['until']));
                     })
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['from'] ?? null) {
-                            $indicators['from'] = 'Desde: ' . \Carbon\Carbon::parse($data['from'])->format('d/m/Y');
+                            $indicators['from'] = 'Desde: '.Carbon::parse($data['from'])->format('d/m/Y');
                         }
                         if ($data['until'] ?? null) {
-                            $indicators['until'] = 'Hasta: ' . \Carbon\Carbon::parse($data['until'])->format('d/m/Y');
+                            $indicators['until'] = 'Hasta: '.Carbon::parse($data['until'])->format('d/m/Y');
                         }
+
                         return $indicators;
                     }),
             ])
@@ -141,12 +143,12 @@ class AppointmentsTable
                     ->modalHeading('¿Marcar cita como completada?')
                     ->modalDescription('Se generará una venta automáticamente.')
                     ->modalSubmitActionLabel('Sí, completar')
-                    ->visible(fn(Appointment $record) => $record->status->value !== 'Completada')
-                    ->action(fn(Appointment $record) => $record->update(['status' => 'Completada'])),
+                    ->visible(fn (Appointment $record) => $record->status === AppointmentStatus::Pendiente)
+                    ->action(fn (Appointment $record) => $record->update(['status' => 'Completada'])),
                 EditAction::make()
-                    ->visible(fn(Appointment $record) => $record->status->value !== 'Completada'),
+                    ->visible(fn (Appointment $record) => $record->status === AppointmentStatus::Pendiente),
                 DeleteAction::make()
-                    ->visible(fn(Appointment $record) => $record->status->value !== 'Completada')
+                    ->visible(fn (Appointment $record) => $record->status !== AppointmentStatus::Completada)
                     ->requiresConfirmation(),
             ])
 

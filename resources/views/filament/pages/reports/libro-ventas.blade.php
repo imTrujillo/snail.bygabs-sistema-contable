@@ -20,7 +20,7 @@
 
             {{-- Encabezado del reporte --}}
             <div class="text-center space-y-1 border-b pb-4">
-                <p class="font-bold uppercase">Libro de Ventas a Consumidor Final</p>
+                <p class="font-bold uppercase">Libro de Ventas e ingresos (FCF y CCF)</p>
                 <p class="font-semibold">{{ $company->name }}</p>
                 <p>N.R.C.: {{ $company->nrc }} &nbsp;|&nbsp; N.I.T.: {{ $company->nit }}</p>
                 <p>Periodo Tributario: {{ $period->name }}</p>
@@ -31,7 +31,9 @@
                 <table class="w-full text-sm border-collapse">
                     <thead class="bg-gray-100 dark:bg-gray-700">
                         <tr>
+                            <th class="border p-2 text-left">Tipo</th>
                             <th class="border p-2 text-left">Fecha</th>
+                            <th class="border p-2 text-left">Cliente</th>
                             <th class="border p-2 text-left">Doc. Del</th>
                             <th class="border p-2 text-left">Doc. Al</th>
                             <th class="border p-2 text-right">V. Exentas</th>
@@ -44,8 +46,10 @@
                     <tbody>
                         @foreach ($documents as $doc)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                                <td class="border p-2 font-semibold">{{ $doc->type }}</td>
                                 <td class="border p-2">{{ \Carbon\Carbon::parse($doc->issue_date)->format('d-M-y') }}
                                 </td>
+                                <td class="border p-2">{{ $doc->customer?->name ?? '—' }}</td>
                                 <td class="border p-2">{{ $doc->document_number }}</td>
                                 <td class="border p-2">{{ $doc->document_number }}</td>
                                 <td class="border p-2 text-right">${{ number_format($doc->exempt_amount, 2) }}</td>
@@ -58,7 +62,7 @@
                     </tbody>
                     <tfoot class="font-bold bg-gray-100 dark:bg-gray-700">
                         <tr>
-                            <td class="border p-2" colspan="3">TOTAL</td>
+                            <td class="border p-2" colspan="5">TOTAL</td>
                             <td class="border p-2 text-right">${{ number_format($totals['ventas_exentas'], 2) }}</td>
                             <td class="border p-2 text-right">${{ number_format($totals['ventas_no_grav'], 2) }}</td>
                             <td class="border p-2 text-right">${{ number_format($totals['ventas_gravadas'], 2) }}</td>

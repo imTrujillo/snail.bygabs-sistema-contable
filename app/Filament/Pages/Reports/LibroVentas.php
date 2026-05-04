@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Models\CompanySetting;
 use App\Models\FiscalPeriod;
 use App\Models\TaxDocument;
 use BackedEnum;
@@ -19,8 +20,11 @@ class LibroVentas extends Page implements HasForms
     use InteractsWithForms;
 
     protected static string|UnitEnum|null $navigationGroup = 'Reportes';
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
+
     protected static ?string $navigationLabel = 'Libro de Ventas';
+
     protected string $view = 'filament.pages.reports.libro-ventas';
 
     public ?int $fiscal_period_id = null;
@@ -43,18 +47,18 @@ class LibroVentas extends Page implements HasForms
                 ->label('Exportar PDF')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('gray')
-                ->visible(fn() => (bool) $this->fiscal_period_id)
+                ->visible(fn () => (bool) $this->fiscal_period_id)
                 ->action(function () {
-                    $period    = FiscalPeriod::find($this->fiscal_period_id);
+                    $period = FiscalPeriod::find($this->fiscal_period_id);
                     $documents = $this->getDocuments();
-                    $totals    = $this->getTotals();
-                    $company   = \App\Models\CompanySetting::current();
+                    $totals = $this->getTotals();
+                    $company = CompanySetting::current();
 
                     $pdf = Pdf::loadView('filament.pages.reports.pdf.libro-ventas', compact('period', 'documents', 'totals', 'company'))
                         ->setPaper('letter', 'landscape');
 
                     return response()->streamDownload(
-                        fn() => print($pdf->output()),
+                        fn () => print ($pdf->output()),
                         "libro-ventas-{$period->name}.pdf"
                     );
                 }),
@@ -63,15 +67,20 @@ class LibroVentas extends Page implements HasForms
 
     public function getDocuments()
     {
-        if (!$this->fiscal_period_id) return collect();
+        if (! $this->fiscal_period_id) {
+            return collect();
+        }
 
         $period = FiscalPeriod::find($this->fiscal_period_id);
 
         return TaxDocument::with('customer')
             ->whereIn('type', ['FCF', 'CCF'])
+            ->where('reference_type', 'sale')
             ->whereBetween('issue_date', [$period->start_date, $period->end_date])
             ->where('is_voided', false)
             ->orderBy('issue_date')
+            ->orderBy('type')
+            ->orderBy('document_number')
             ->get();
     }
 
@@ -80,11 +89,11 @@ class LibroVentas extends Page implements HasForms
         $docs = $this->getDocuments();
 
         return [
-            'ventas_exentas'  => $docs->sum('exempt_amount'),
-            'ventas_no_grav'  => $docs->sum('non_taxable_amount'),
+            'ventas_exentas' => $docs->sum('exempt_amount'),
+            'ventas_no_grav' => $docs->sum('non_taxable_amount'),
             'ventas_gravadas' => $docs->sum('taxable_amount'),
-            'debito_fiscal'   => $docs->sum('iva_amount'),
-            'total_ventas'    => $docs->sum('total_amount'),
+            'debito_fiscal' => $docs->sum('iva_amount'),
+            'total_ventas' => $docs->sum('total_amount'),
         ];
     }
 }

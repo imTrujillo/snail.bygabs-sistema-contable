@@ -3,14 +3,13 @@
 namespace App\Filament\Resources\Sales\Tables;
 
 use App\Filament\Exports\SaleExporter;
-use App\Filament\Imports\SaleImporter;
 use App\Models\Sale;
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ExportBulkAction;
-use Filament\Actions\ImportAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -31,15 +30,15 @@ class SalesTable
                     ->sortable()
                     ->icon('heroicon-m-user')
                     ->description(
-                        fn($record) => $record->appointment
-                            ? '📅 ' . $record->appointment->appointment_date?->format('d/m/Y H:i')
+                        fn ($record) => $record->appointment
+                            ? '📅 '.$record->appointment->appointment_date?->format('d/m/Y H:i')
                             : 'Sin cita asociada'
                     ),
 
                 TextColumn::make('document_type')
                     ->label('Documento')
                     ->badge()
-                    ->color(fn(string $state) => match ($state) {
+                    ->color(fn (string $state) => match ($state) {
                         'FCF' => 'info',
                         'CCF' => 'warning',
                     }),
@@ -57,15 +56,15 @@ class SalesTable
                 TextColumn::make('payment_method')
                     ->label('Pago')
                     ->badge()
-                    ->color(fn(string $state) => match ($state) {
-                        'Efectivo'      => 'success',
+                    ->color(fn (string $state) => match ($state) {
+                        'Efectivo' => 'success',
                         'Transferencia' => 'info',
-                        'Tarjeta'       => 'warning',
+                        'Tarjeta' => 'warning',
                     })
                     ->icons([
-                        'heroicon-m-banknotes'          => 'Efectivo',
+                        'heroicon-m-banknotes' => 'Efectivo',
                         'heroicon-m-arrow-right-circle' => 'Transferencia',
-                        'heroicon-m-credit-card'        => 'Tarjeta',
+                        'heroicon-m-credit-card' => 'Tarjeta',
                     ]),
 
                 TextColumn::make('taxDocument.id')
@@ -79,7 +78,7 @@ class SalesTable
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->description(
-                        fn($record): string => $record->created_at
+                        fn ($record): string => $record->created_at
                             ? $record->created_at->diffForHumans()
                             : ''
                     ),
@@ -97,9 +96,9 @@ class SalesTable
                 SelectFilter::make('payment_method')
                     ->label('Método de pago')
                     ->options([
-                        'Efectivo'      => 'Efectivo',
+                        'Efectivo' => 'Efectivo',
                         'Transferencia' => 'Transferencia',
-                        'Tarjeta'       => 'Tarjeta',
+                        'Tarjeta' => 'Tarjeta',
                     ]),
 
                 SelectFilter::make('document_type')
@@ -129,36 +128,33 @@ class SalesTable
                     ])
                     ->query(function ($query, array $data) {
                         return $query
-                            ->when($data['from'], fn($q) => $q->whereDate('created_at', '>=', $data['from']))
-                            ->when($data['until'], fn($q) => $q->whereDate('created_at', '<=', $data['until']));
+                            ->when($data['from'], fn ($q) => $q->whereDate('created_at', '>=', $data['from']))
+                            ->when($data['until'], fn ($q) => $q->whereDate('created_at', '<=', $data['until']));
                     })
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['from'] ?? null) {
-                            $indicators['from'] = 'Desde: ' . \Carbon\Carbon::parse($data['from'])->format('d/m/Y');
+                            $indicators['from'] = 'Desde: '.Carbon::parse($data['from'])->format('d/m/Y');
                         }
                         if ($data['until'] ?? null) {
-                            $indicators['until'] = 'Hasta: ' . \Carbon\Carbon::parse($data['until'])->format('d/m/Y');
+                            $indicators['until'] = 'Hasta: '.Carbon::parse($data['until'])->format('d/m/Y');
                         }
+
                         return $indicators;
                     }),
 
                 Filter::make('has_appointment')
                     ->label('Con cita asociada')
-                    ->query(fn($query) => $query->whereNotNull('appointment_id')),
+                    ->query(fn ($query) => $query->whereNotNull('appointment_id')),
 
                 Filter::make('has_tax_document')
                     ->label('Con documento fiscal')
-                    ->query(fn($query) => $query->whereNotNull('tax_document_id')),
+                    ->query(fn ($query) => $query->whereNotNull('tax_document_id')),
             ])
 
             ->filtersFormColumns(3)
 
             ->headerActions([
-                ImportAction::make()
-                    ->importer(SaleImporter::class)
-                    ->label('Importar'),
-
                 ExportAction::make()
                     ->exporter(SaleExporter::class)
                     ->label('Exportar'),
@@ -171,8 +167,8 @@ class SalesTable
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->visible(fn(Sale $record) => $record->status !== 'anulada')
-                    ->action(fn(Sale $record) => $record->anular()),
+                    ->visible(fn (Sale $record) => ($record->status ?? 'vigente') !== 'anulada')
+                    ->action(fn (Sale $record) => $record->anular()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

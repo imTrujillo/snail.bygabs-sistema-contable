@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\Expenses\Schemas;
 
+use App\Models\Account;
 use App\Models\FiscalPeriod;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
-
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -38,7 +38,7 @@ class ExpenseForm
                         ->relationship(
                             name: 'account',
                             titleAttribute: 'name',
-                            modifyQueryUsing: fn($query) => $query
+                            modifyQueryUsing: fn ($query) => $query
                                 ->where('is_group', false)
                                 ->where('type', 'Gasto'),
                         )
@@ -49,8 +49,10 @@ class ExpenseForm
                         ->helperText('La categoría se asignará automáticamente.')
                         ->live()
                         ->afterStateUpdated(function (Set $set, Get $get) {
-                            $account = \App\Models\Account::find($get('account_id'));
-                            if (!$account) return;
+                            $account = Account::find($get('account_id'));
+                            if (! $account) {
+                                return;
+                            }
 
                             $map = [
                                 '6100' => 'Administrativo',
@@ -68,16 +70,16 @@ class ExpenseForm
                         ->hidden()
                         ->dehydrated()
                         ->options([
-                            'Operativo'      => 'Operativo',
+                            'Operativo' => 'Operativo',
                             'Administrativo' => 'Administrativo',
-                            'Marketing'      => 'Marketing',
-                            'Nomina'         => 'Nómina',
-                            'Servicios'      => 'Servicios (agua, luz, internet)',
-                            'Alquiler'       => 'Alquiler',
-                            'Transporte'     => 'Transporte',
-                            'Insumos'        => 'Insumos / Materiales',
-                            'Impuestos'      => 'Impuestos',
-                            'Otros'          => 'Otros',
+                            'Marketing' => 'Marketing',
+                            'Nomina' => 'Nómina',
+                            'Servicios' => 'Servicios (agua, luz, internet)',
+                            'Alquiler' => 'Alquiler',
+                            'Transporte' => 'Transporte',
+                            'Insumos' => 'Insumos / Materiales',
+                            'Impuestos' => 'Impuestos',
+                            'Otros' => 'Otros',
                         ]),
 
                     DateTimePicker::make('expense_date')
@@ -129,8 +131,8 @@ class ExpenseForm
                         ->label('Nombre del proveedor')
                         ->minLength(3)
                         ->maxLength(255)
-                        ->visible(fn(Get $get) => $get('document_type') === 'CCF')
-                        ->required(fn(Get $get) => $get('document_type') === 'CCF')
+                        ->visible(fn (Get $get) => $get('document_type') === 'CCF')
+                        ->required(fn (Get $get) => $get('document_type') === 'CCF')
                         ->columnSpan(1),
 
                     TextInput::make('supplier_nrc')
@@ -138,8 +140,8 @@ class ExpenseForm
                         ->regex('/^\d{1,6}-\d$/')   // ← faltaba formato
                         ->helperText('Formato: 123456-7')
                         ->maxLength(20)
-                        ->visible(fn(Get $get) => $get('document_type') === 'CCF')
-                        ->required(fn(Get $get) => $get('document_type') === 'CCF'),
+                        ->visible(fn (Get $get) => $get('document_type') === 'CCF')
+                        ->required(fn (Get $get) => $get('document_type') === 'CCF'),
 
                     TextInput::make('iva_amount')
                         ->label('IVA crédito fiscal (13%)')
@@ -148,10 +150,9 @@ class ExpenseForm
                         ->step(0.01)
                         ->disabled()
                         ->dehydrated()
-                        ->visible(fn(Get $get) => $get('document_type') === 'CCF')
+                        ->visible(fn (Get $get) => $get('document_type') === 'CCF')
                         ->formatStateUsing(
-                            fn(Get $get) =>
-                            $get('document_type') === 'CCF'
+                            fn (Get $get) => $get('document_type') === 'CCF'
                                 ? round(($get('amount') ?? 0) * 0.13, 2)
                                 : 0
                         )
@@ -165,33 +166,34 @@ class ExpenseForm
                     ToggleButtons::make('paid_with')
                         ->label('Pagado con')
                         ->helperText('La cuenta de pago se asignará automáticamente.')
+                        ->default('Efectivo')
                         ->required()
                         ->inline()
                         ->live()
                         ->afterStateUpdated(function (Set $set, Get $get) {
                             $map = [
-                                'Efectivo'      => '1102',
+                                'Efectivo' => '1102',
                                 'Transferencia' => '1101',
-                                'Tarjeta'       => '1101',
+                                'Tarjeta' => '1101',
                             ];
-                            $code    = $map[$get('paid_with')] ?? null;
-                            $account = \App\Models\Account::where('code', $code)->first();
+                            $code = $map[$get('paid_with')] ?? null;
+                            $account = Account::where('code', $code)->first();
                             $set('payment_account_id', $account?->id);
                         })
                         ->options([
-                            'Efectivo'      => 'Efectivo',
+                            'Efectivo' => 'Efectivo',
                             'Transferencia' => 'Transferencia',
-                            'Tarjeta'       => 'Tarjeta',
+                            'Tarjeta' => 'Tarjeta',
                         ])
                         ->icons([
-                            'Efectivo'      => 'heroicon-m-banknotes',
+                            'Efectivo' => 'heroicon-m-banknotes',
                             'Transferencia' => 'heroicon-m-arrow-right-circle',
-                            'Tarjeta'       => 'heroicon-m-credit-card',
+                            'Tarjeta' => 'heroicon-m-credit-card',
                         ])
                         ->colors([
-                            'Efectivo'      => 'success',
+                            'Efectivo' => 'success',
                             'Transferencia' => 'info',
-                            'Tarjeta'       => 'warning',
+                            'Tarjeta' => 'warning',
                         ])
                         ->columnSpanFull(),
 
@@ -202,7 +204,7 @@ class ExpenseForm
                         ->relationship(
                             name: 'paymentAccount',
                             titleAttribute: 'name',
-                            modifyQueryUsing: fn($query) => $query->whereIn('code', ['1101', '1102']),
+                            modifyQueryUsing: fn ($query) => $query->whereIn('code', ['1101', '1102']),
                         ),
                 ]),
 

@@ -103,7 +103,7 @@
                         <span>${{ number_format($data['total_pasivos'], 2) }}</span>
                     </div>
 
-                    {{-- Patrimonio --}}
+                    {{-- Patrimonio (capital / reservas) --}}
                     <p class="font-bold uppercase bg-gray-100 dark:bg-gray-700 p-2 rounded mt-3">
                         Patrimonio
                     </p>
@@ -118,14 +118,41 @@
                         <span>${{ number_format($data['total_patrimonio'], 2) }}</span>
                     </div>
 
-                    {{-- Pasivos + Patrimonio --}}
+                    {{-- Resultado del período (cuentas nominales sin cerrar) --}}
+                    <p class="font-bold uppercase bg-gray-100 dark:bg-gray-700 p-2 rounded mt-3">
+                        Resultado del período (Ingresos − Costos − Gastos)
+                    </p>
+                    @foreach ($data['ingresos'] as $account)
+                        <div class="flex justify-between px-2 text-emerald-800 dark:text-emerald-300">
+                            <span>{{ $account['name'] }}</span>
+                            <span>${{ number_format($account['balance'], 2) }}</span>
+                        </div>
+                    @endforeach
+                    @foreach ($data['costos'] as $account)
+                        <div class="flex justify-between px-2 text-amber-800 dark:text-amber-300">
+                            <span>{{ $account['name'] }}</span>
+                            <span>−${{ number_format($account['balance'], 2) }}</span>
+                        </div>
+                    @endforeach
+                    @foreach ($data['gastos'] as $account)
+                        <div class="flex justify-between px-2 text-amber-800 dark:text-amber-300">
+                            <span>{{ $account['name'] }}</span>
+                            <span>−${{ number_format($account['balance'], 2) }}</span>
+                        </div>
+                    @endforeach
+                    <div class="flex justify-between px-2 font-semibold border-t pt-1">
+                        <span>Utilidad neta del período</span>
+                        <span>${{ number_format($data['resultado_periodo'], 2) }}</span>
+                    </div>
+
+                    {{-- Pasivos + Patrimonio + Resultado --}}
                     <div class="flex justify-between px-2 font-bold text-base border-t-2 pt-2 mt-2">
-                        <span>PASIVOS + PATRIMONIO</span>
-                        <span>${{ number_format($data['total_pasivos'] + $data['total_patrimonio'], 2) }}</span>
+                        <span>PASIVOS + PATRIMONIO + RESULTADO</span>
+                        <span>${{ number_format($data['total_derecha'], 2) }}</span>
                     </div>
 
                     {{-- Verificación cuadre --}}
-                    @php $diferencia = $data['total_activos'] - ($data['total_pasivos'] + $data['total_patrimonio']); @endphp
+                    @php $diferencia = $data['total_activos'] - $data['total_derecha']; @endphp
                     @if (abs($diferencia) > 0.01)
                         <div class="bg-red-100 text-red-700 rounded p-2 text-xs mt-2">
                             ⚠️ El balance no cuadra. Diferencia: ${{ number_format($diferencia, 2) }}

@@ -12,7 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('purchases', function (Blueprint $table) {
-            $table->string('document_type')->default('CCF')->after('document_number');
+            if (! Schema::hasColumn('purchases', 'document_number')) {
+                $table->string('document_number')->nullable()->after('account_id');
+            }
+        });
+
+        Schema::table('purchases', function (Blueprint $table) {
+            if (! Schema::hasColumn('purchases', 'document_type')) {
+                $table->string('document_type')->default('CCF')->after('document_number');
+            }
         });
     }
 
@@ -22,7 +30,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('purchases', function (Blueprint $table) {
-            //
+            if (Schema::hasColumn('purchases', 'document_type')) {
+                $table->dropColumn('document_type');
+            }
         });
     }
 };

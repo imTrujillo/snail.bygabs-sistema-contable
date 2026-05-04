@@ -60,7 +60,7 @@ class AccountSeeder extends Seeder
 
             // ─── GASTOS ────────────────────────────────────────
             ['code' => '6000', 'name' => 'GASTOS',                       'type' => 'Gasto',     'subtype' => 'Operativo',     'parent' => null,   'is_group' => true],
-            ['code' => '6100', 'name' => 'Gastos de administración',     'type' => 'Gasto',     'subtype' => 'administrativo', 'parent' => '6000', 'is_group' => false],
+            ['code' => '6100', 'name' => 'Gastos de administración',     'type' => 'Gasto',     'subtype' => 'Administrativo', 'parent' => '6000', 'is_group' => false],
             ['code' => '6200', 'name' => 'Gastos de venta',              'type' => 'Gasto',     'subtype' => 'Venta',         'parent' => '6000', 'is_group' => false],
             ['code' => '6300', 'name' => 'Gastos financieros',           'type' => 'Gasto',     'subtype' => 'Financiero',    'parent' => '6000', 'is_group' => false],
             ['code' => '6400', 'name' => 'Gastos no operativos',         'type' => 'Gasto',     'subtype' => 'No Operativo',  'parent' => '6000', 'is_group' => false],

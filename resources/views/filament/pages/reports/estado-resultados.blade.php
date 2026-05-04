@@ -36,6 +36,8 @@
 
                 <div class="flex justify-between text-red-500 mt-2"><span>(-) Gastos
                         Financieros</span><span>${{ number_format($r['gastos_financieros'], 2) }}</span></div>
+                <div class="flex justify-between text-red-500"><span>(-) Gastos no
+                        operativos</span><span>${{ number_format($r['gastos_no_operativos'], 2) }}</span></div>
                 <div class="flex justify-between font-bold border-t pt-1"><span>(=) Utilidad antes de
                         ISR</span><span>${{ number_format($r['utilidad_antes_isr'], 2) }}</span></div>
 

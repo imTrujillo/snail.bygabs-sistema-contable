@@ -176,12 +176,36 @@
                 <span>${{ number_format($data['total_patrimonio'], 2) }}</span>
             </div>
 
-            <div class="total-row">
-                <span>PASIVOS + PATRIMONIO</span>
-                <span>${{ number_format($data['total_pasivos'] + $data['total_patrimonio'], 2) }}</span>
+            <div class="section-title">Resultado del período</div>
+            @foreach ($data['ingresos'] as $account)
+                <div class="account-row">
+                    <span>{{ $account['name'] }}</span>
+                    <span>${{ number_format($account['balance'], 2) }}</span>
+                </div>
+            @endforeach
+            @foreach ($data['costos'] as $account)
+                <div class="account-row">
+                    <span>{{ $account['name'] }}</span>
+                    <span>-${{ number_format($account['balance'], 2) }}</span>
+                </div>
+            @endforeach
+            @foreach ($data['gastos'] as $account)
+                <div class="account-row">
+                    <span>{{ $account['name'] }}</span>
+                    <span>-${{ number_format($account['balance'], 2) }}</span>
+                </div>
+            @endforeach
+            <div class="subtotal-row">
+                <span>Utilidad neta del período</span>
+                <span>${{ number_format($data['resultado_periodo'], 2) }}</span>
             </div>
 
-            @php $diff = $data['total_activos'] - ($data['total_pasivos'] + $data['total_patrimonio']); @endphp
+            <div class="total-row">
+                <span>PASIVOS + PATRIMONIO + RESULTADO</span>
+                <span>${{ number_format($data['total_derecha'], 2) }}</span>
+            </div>
+
+            @php $diff = $data['total_activos'] - $data['total_derecha']; @endphp
             @if (abs($diff) > 0.01)
                 <div class="alert alert-red">⚠ Balance no cuadra — Diferencia: ${{ number_format($diff, 2) }}</div>
             @else

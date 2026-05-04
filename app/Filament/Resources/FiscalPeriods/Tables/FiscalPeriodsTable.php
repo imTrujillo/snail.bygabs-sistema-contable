@@ -44,14 +44,20 @@ class FiscalPeriodsTable
                     ->label('Transacciones')
                     ->counts('journalEntries')
                     ->badge()
-                    ->color(fn($state) => $state > 0 ? 'warning' : 'gray'),
+                    ->color(fn ($state) => $state > 0 ? 'warning' : 'gray'),
             ])
             ->recordActions([
 
                 EditAction::make()
+                    ->visible(fn (FiscalPeriod $record) => ! $record->is_closed && ! $record->hasTransactions())
                     ->tooltip(function (FiscalPeriod $record): string {
-                        if ($record->is_closed) return 'Período cerrado, no editable.';
-                        if ($record->hasTransactions()) return 'Tiene transacciones registradas, no editable.';
+                        if ($record->is_closed) {
+                            return 'Período cerrado, no editable.';
+                        }
+                        if ($record->hasTransactions()) {
+                            return 'Tiene transacciones registradas, no editable.';
+                        }
+
                         return 'Editar período';
                     }),
 
@@ -64,19 +70,20 @@ class FiscalPeriodsTable
                     ->modalHeading('¿Cerrar este período?')
                     ->modalDescription('Esta acción es irreversible. Se calcularán los saldos finales y se trasladarán al siguiente período.')
                     ->modalSubmitActionLabel('Sí, cerrar período')
-                    ->visible(fn(FiscalPeriod $record) => !$record->is_closed)
+                    ->visible(fn (FiscalPeriod $record) => ! $record->is_closed)
                     ->action(function (FiscalPeriod $record) {
-                        $service = new PeriodClosingService();
+                        $service = new PeriodClosingService;
 
                         // Validar antes de cerrar
                         $errors = $service->validate($record);
 
-                        if (!empty($errors)) {
+                        if (! empty($errors)) {
                             Notification::make()
                                 ->title('No se puede cerrar el período')
                                 ->body(implode("\n", array_slice($errors, 0, 3)))
                                 ->danger()
                                 ->send();
+
                             return;
                         }
 
@@ -89,7 +96,7 @@ class FiscalPeriodsTable
 
                             Notification::make()
                                 ->title("Período {$record->name} cerrado")
-                                ->body("Resultado neto: $" . number_format($closing->net_result, 2))
+                                ->body('Resultado neto: $'.number_format($closing->net_result, 2))
                                 ->success()
                                 ->send();
 
@@ -111,10 +118,10 @@ class FiscalPeriodsTable
                     ->requiresConfirmation()
                     ->modalHeading('Re-mayorizar período')
                     ->modalDescription('Recalcula todos los saldos del mayor desde cero. Útil si hubo ajustes manuales.')
-                    ->visible(fn(FiscalPeriod $record) => !$record->is_closed)
+                    ->visible(fn (FiscalPeriod $record) => ! $record->is_closed)
                     ->action(function (FiscalPeriod $record) {
                         try {
-                            (new PeriodClosingService())->remayorizar($record);
+                            (new PeriodClosingService)->remayorizar($record);
 
                             Notification::make()
                                 ->title('Mayor recalculado')

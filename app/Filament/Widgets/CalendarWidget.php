@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Appointment;
 use Carbon\Carbon;
+use Carbon\WeekDay;
 use Guava\Calendar\Enums\CalendarViewType;
 use Guava\Calendar\Filament\CalendarWidget as FilamentCalendarWidget;
 use Guava\Calendar\ValueObjects\CalendarEvent;
@@ -14,9 +15,12 @@ use Illuminate\Support\HtmlString;
 
 class CalendarWidget extends FilamentCalendarWidget
 {
-    protected CalendarViewType $calendarView      = CalendarViewType::DayGridMonth;
-    protected ?string $defaultEventClickAction    = 'edit';
-    protected \Carbon\WeekDay $firstDay           = \Carbon\WeekDay::Monday;
+    protected CalendarViewType $calendarView = CalendarViewType::DayGridMonth;
+
+    protected ?string $defaultEventClickAction = 'edit';
+
+    protected WeekDay $firstDay = WeekDay::Monday;
+
     protected string|HtmlString|null|bool $heading = 'Calendario de Citas';
 
     protected static ?int $sort = 5;
@@ -30,11 +34,15 @@ class CalendarWidget extends FilamentCalendarWidget
             ->get()
             ->map(function (Appointment $appointment) {
 
-                $color = match ($appointment->status) {
-                    'Pendiente'  => '#F59E0B',
+                $statusValue = $appointment->status instanceof \BackedEnum
+                    ? $appointment->status->value
+                    : (string) $appointment->status;
+
+                $color = match ($statusValue) {
+                    'Pendiente' => '#F59E0B',
                     'Completada' => '#10B981',
-                    'Cancelada'  => '#EF4444',
-                    default      => '#6366F1',
+                    'Cancelada' => '#EF4444',
+                    default => '#6366F1',
                 };
 
                 return CalendarEvent::make($appointment)
@@ -48,7 +56,7 @@ class CalendarWidget extends FilamentCalendarWidget
                     )
                     ->backgroundColor($color)
                     ->extendedProps([
-                        'status'   => $appointment->status,
+                        'status' => $appointment->status,
                         'services' => $appointment->services->pluck('name')->join(', '),
                     ]);
             });

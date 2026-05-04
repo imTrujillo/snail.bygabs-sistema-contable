@@ -2,7 +2,13 @@
 
 namespace App\Filament\Resources\Employees\Tables;
 
+use App\Filament\Exports\EmployeeExporter;
+use App\Filament\Imports\EmployeeImporter;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
+use Filament\Actions\ExportAction;
+use Filament\Actions\ExportBulkAction;
+use Filament\Actions\ImportAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -14,6 +20,14 @@ class EmployeesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->headerActions([
+                ImportAction::make()
+                    ->importer(EmployeeImporter::class)
+                    ->label('Importar'),
+                ExportAction::make()
+                    ->exporter(EmployeeExporter::class)
+                    ->label('Exportar'),
+            ])
             ->columns([
                 TextColumn::make('name')
                     ->label('Nombre')
@@ -32,16 +46,15 @@ class EmployeesTable
                 TextColumn::make('pay_frequency')
                     ->label('Frecuencia')
                     ->badge()
-                    ->color(fn(string $state) => match ($state) {
-                        'Mensual'   => 'info',
+                    ->color(fn (string $state) => match ($state) {
+                        'Mensual' => 'info',
                         'Quincenal' => 'warning',
-                        'Semanal'   => 'success',
+                        'Semanal' => 'success',
                     }),
                 TextColumn::make('dui')
                     ->label('DUI')
                     ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
-
 
                 IconColumn::make('is_active')
                     ->label('Activo')
@@ -61,13 +74,19 @@ class EmployeesTable
                 SelectFilter::make('pay_frequency')
                     ->label('Frecuencia')
                     ->options([
-                        'Semanal'   => 'Semanal',
+                        'Semanal' => 'Semanal',
                         'Quincenal' => 'Quincenal',
-                        'Mensual'   => 'Mensual',
+                        'Mensual' => 'Mensual',
                     ]),
             ])
             ->recordActions([
                 EditAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    ExportBulkAction::make()
+                        ->exporter(EmployeeExporter::class),
+                ]),
             ]);
     }
 }

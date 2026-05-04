@@ -3,17 +3,17 @@
 namespace App\Filament\Resources\Expenses\Tables;
 
 use App\Filament\Exports\ExpenseExporter;
-use App\Filament\Imports\ExpenseImporter;
+use Carbon\Carbon;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ExportAction;
 use Filament\Actions\ExportBulkAction;
-use Filament\Actions\ImportAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -30,14 +30,14 @@ class ExpensesTable
                     ->searchable()
                     ->sortable()
                     ->icon('heroicon-m-receipt-percent')
-                    ->description(fn($record) => $record->category),
+                    ->description(fn ($record) => $record->category),
 
                 TextColumn::make('amount')
                     ->label('Monto')
                     ->money('USD')
                     ->sortable()
                     ->summarize([
-                        \Filament\Tables\Columns\Summarizers\Sum::make()
+                        Sum::make()
                             ->money('USD')
                             ->label('Total'),
                     ]),
@@ -46,13 +46,13 @@ class ExpensesTable
                     ->label('Método')
                     ->colors([
                         'success' => 'Efectivo',
-                        'info'    => 'Transferencia',
+                        'info' => 'Transferencia',
                         'warning' => 'Tarjeta',
                     ])
                     ->icons([
-                        'heroicon-m-banknotes'        => 'Efectivo',
+                        'heroicon-m-banknotes' => 'Efectivo',
                         'heroicon-m-arrow-right-circle' => 'Transferencia',
-                        'heroicon-m-credit-card'      => 'Tarjeta',
+                        'heroicon-m-credit-card' => 'Tarjeta',
                     ]),
 
                 TextColumn::make('account.name')
@@ -66,7 +66,7 @@ class ExpensesTable
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->description(
-                        fn($record): string => $record->expense_date
+                        fn ($record): string => $record->expense_date
                             ? $record->expense_date->diffForHumans()
                             : ''
                     ),
@@ -74,7 +74,7 @@ class ExpensesTable
                 TextColumn::make('notes')
                     ->label('Notas')
                     ->limit(35)
-                    ->tooltip(fn($record) => $record->notes)
+                    ->tooltip(fn ($record) => $record->notes)
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('created_at')
@@ -96,24 +96,24 @@ class ExpensesTable
                 SelectFilter::make('category')
                     ->label('Categoría')
                     ->options([
-                        'Operativo'      => 'Operativo',
+                        'Operativo' => 'Operativo',
                         'Administrativo' => 'Administrativo',
-                        'Marketing'      => 'Marketing',
-                        'Nomina'         => 'Nómina',
-                        'Servicios'      => 'Servicios',
-                        'Alquiler'       => 'Alquiler',
-                        'Transporte'     => 'Transporte',
-                        'Insumos'        => 'Insumos / Materiales',
-                        'Impuestos'      => 'Impuestos',
-                        'Otros'          => 'Otros',
+                        'Marketing' => 'Marketing',
+                        'Nomina' => 'Nómina',
+                        'Servicios' => 'Servicios',
+                        'Alquiler' => 'Alquiler',
+                        'Transporte' => 'Transporte',
+                        'Insumos' => 'Insumos / Materiales',
+                        'Impuestos' => 'Impuestos',
+                        'Otros' => 'Otros',
                     ]),
 
                 SelectFilter::make('paid_with')
                     ->label('Método de pago')
                     ->options([
-                        'Efectivo'      => 'Efectivo',
+                        'Efectivo' => 'Efectivo',
                         'Transferencia' => 'Transferencia',
-                        'Tarjeta'       => 'Tarjeta',
+                        'Tarjeta' => 'Tarjeta',
                     ]),
 
                 SelectFilter::make('account_id')
@@ -136,17 +136,18 @@ class ExpensesTable
                     ])
                     ->query(function ($query, array $data) {
                         return $query
-                            ->when($data['from'], fn($q) => $q->whereDate('expense_date', '>=', $data['from']))
-                            ->when($data['until'], fn($q) => $q->whereDate('expense_date', '<=', $data['until']));
+                            ->when($data['from'], fn ($q) => $q->whereDate('expense_date', '>=', $data['from']))
+                            ->when($data['until'], fn ($q) => $q->whereDate('expense_date', '<=', $data['until']));
                     })
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['from'] ?? null) {
-                            $indicators['from'] = 'Desde: ' . \Carbon\Carbon::parse($data['from'])->format('d/m/Y');
+                            $indicators['from'] = 'Desde: '.Carbon::parse($data['from'])->format('d/m/Y');
                         }
                         if ($data['until'] ?? null) {
-                            $indicators['until'] = 'Hasta: ' . \Carbon\Carbon::parse($data['until'])->format('d/m/Y');
+                            $indicators['until'] = 'Hasta: '.Carbon::parse($data['until'])->format('d/m/Y');
                         }
+
                         return $indicators;
                     }),
             ])
@@ -154,10 +155,6 @@ class ExpensesTable
             ->filtersFormColumns(3)
 
             ->headerActions([
-                ImportAction::make()
-                    ->importer(ExpenseImporter::class)
-                    ->label('Importar'),
-
                 ExportAction::make()
                     ->exporter(ExpenseExporter::class)
                     ->label('Exportar'),

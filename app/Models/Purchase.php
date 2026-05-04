@@ -5,7 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Validation\ValidationException;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -29,12 +30,12 @@ class Purchase extends Model
     ];
 
     protected $casts = [
-        'purchase_date'      => 'date',
-        'exempt_amount'      => 'decimal:2',
+        'purchase_date' => 'date',
+        'exempt_amount' => 'decimal:2',
         'non_taxable_amount' => 'decimal:2',
-        'taxable_amount'     => 'decimal:2',
-        'credit_fiscal'      => 'decimal:2',
-        'total_amount'       => 'decimal:2',
+        'taxable_amount' => 'decimal:2',
+        'credit_fiscal' => 'decimal:2',
+        'total_amount' => 'decimal:2',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -42,7 +43,7 @@ class Purchase extends Model
         return LogOptions::defaults()
             ->logFillable()
             ->logOnlyDirty()
-            ->setDescriptionForEvent(fn(string $eventName) => "Compra {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Compra {$eventName}");
     }
 
     public function supplier(): BelongsTo
@@ -65,8 +66,26 @@ class Purchase extends Model
         return $this->hasMany(PurchaseItem::class);
     }
 
-    public function journalEntry(): MorphOne
+    public function journalEntry(): HasOne
     {
-        return $this->morphOne(JournalEntry::class, 'reference');
+        return $this->hasOne(JournalEntry::class, 'reference_id')
+            ->where('reference_type', 'purchase');
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Purchase $purchase) {
+            if (empty($purchase->document_number)) {
+                return;
+            }
+
+            if (
+                TaxDocument::where('document_number', $purchase->document_number)->exists()
+            ) {
+                throw ValidationException::withMessages([
+                    'document_number' => 'Este número de comprobante (CCF/FCF) ya existe en documentos fiscales.',
+                ]);
+            }
+        });
     }
 }

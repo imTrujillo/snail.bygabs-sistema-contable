@@ -14,23 +14,24 @@ class Appointment extends Model
 {
     use LogsActivity;
 
-    protected $fillable = ["customer_id", 'user_id', 'appointment_date', 'status', 'notes'];
+    protected $fillable = ['customer_id', 'user_id', 'appointment_date', 'status', 'notes', 'payment_method'];
+
+    protected $attributes = [
+        'status' => 'Pendiente',
+    ];
 
     protected $casts = [
         'appointment_date' => 'datetime',
-        'status' => AppointmentStatus::class
+        'status' => AppointmentStatus::class,
     ];
-
-
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->logFillable()
             ->logOnlyDirty()
-            ->setDescriptionForEvent(fn(string $eventName) => "Cita {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Cita {$eventName}");
     }
-
 
     public function customer(): BelongsTo
     {
@@ -62,7 +63,7 @@ class Appointment extends Model
 
 enum AppointmentStatus: string
 {
-    case Pendiente  = 'Pendiente';
+    case Pendiente = 'Pendiente';
     case Completada = 'Completada';
-    case Cancelada  = 'Cancelada';
+    case Cancelada = 'Cancelada';
 }

@@ -6,7 +6,7 @@ use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -15,7 +15,7 @@ class Sale extends Model
 {
     use LogsActivity;
 
-    protected $fillable = ['appointment_id', 'customer_id', 'tax_document_id', 'total', 'payment_method', 'document_type'];
+    protected $fillable = ['appointment_id', 'customer_id', 'tax_document_id', 'total', 'payment_method', 'document_type', 'status'];
 
     protected $casts = [
         'total' => 'decimal:2',
@@ -26,7 +26,7 @@ class Sale extends Model
         return LogOptions::defaults()
             ->logFillable()
             ->logOnlyDirty()
-            ->setDescriptionForEvent(fn(string $eventName) => "Venta {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Venta {$eventName}");
     }
 
     public function appointment(): BelongsTo
@@ -49,38 +49,47 @@ class Sale extends Model
         return $this->hasMany(SaleItem::class);
     }
 
-    public function journalEntry(): MorphOne
+    /**
+     * Asiento generado por el sistema (reference_type = sale en journal_entries).
+     */
+    public function journalEntry(): HasOne
     {
-        return $this->morphOne(JournalEntry::class, 'reference');
+        return $this->hasOne(JournalEntry::class, 'reference_id')
+            ->where('reference_type', 'sale');
     }
 
     public function anular(): void
     {
-        // 1. Revertir asiento contable
-        $originalEntry = $this->journalEntries()->first();
+        $originalEntry = $this->journalEntry()->with('lines')->first();
 
         if ($originalEntry) {
             $reversal = JournalEntry::create([
-                'entry_date'       => now(),
-                'description'      => "Anulación de venta #{$this->id}",
-                'reference_type'   => 'sale_reversal',
-                'reference_id'     => $this->id,
+                'entry_date' => now(),
+                'description' => "Anulación de venta #{$this->id}",
+                'reference_type' => 'manual',
+                'reference_id' => 0,
                 'fiscal_period_id' => $originalEntry->fiscal_period_id,
-                'user_id'          => Auth::id(),
+                'user_id' => Auth::id() ?? $originalEntry->user_id,
+                'journal_entry_type_id' => $originalEntry->journal_entry_type_id,
             ]);
 
-            // Invertir cada línea
             foreach ($originalEntry->lines as $line) {
                 $reversal->lines()->create([
-                    'account_id'  => $line->account_id,
-                    'debit'       => $line->credit,   // invertido
-                    'credit'      => $line->debit,    // invertido
-                    'description' => 'Reversa: ' . $line->description,
+                    'account_id' => $line->account_id,
+                    'debit' => $line->credit,
+                    'credit' => $line->debit,
+                    'description' => 'Reversa: '.$line->description,
                 ]);
             }
         }
 
-        // 2. Marcar como anulada
+        if ($this->taxDocument && ! $this->taxDocument->is_voided) {
+            $this->taxDocument->update([
+                'is_voided' => true,
+                'voided_at' => now(),
+            ]);
+        }
+
         $this->update(['status' => 'anulada']);
 
         Notification::make()

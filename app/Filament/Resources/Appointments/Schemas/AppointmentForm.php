@@ -16,7 +16,6 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
-
 class AppointmentForm
 {
     public static function configure(Schema $schema): Schema
@@ -70,6 +69,23 @@ class AppointmentForm
                             ->required()
                             ->inline()
                             ->hiddenOn('create'),
+
+                        ToggleButtons::make('payment_method')
+                            ->label('Método de pago (al completar)')
+                            ->helperText('Se usará al marcar la cita como completada y generar la venta.')
+                            ->inline()
+                            ->options([
+                                'Efectivo' => 'Efectivo',
+                                'Transferencia' => 'Transferencia',
+                                'Tarjeta' => 'Tarjeta',
+                            ])
+                            ->icons([
+                                'Efectivo' => 'heroicon-m-banknotes',
+                                'Transferencia' => 'heroicon-m-arrow-right-circle',
+                                'Tarjeta' => 'heroicon-m-credit-card',
+                            ])
+                            ->default('Efectivo')
+                            ->columnSpanFull(),
 
                         Textarea::make('notes')
                             ->label('Notas')

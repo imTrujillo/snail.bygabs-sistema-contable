@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -19,6 +19,7 @@ class Expense extends Model
         'expense_date',
         'paid_with',
         'account_id',
+        'payment_account_id',
         'notes',
         'document_type',
         'supplier_name',
@@ -27,17 +28,16 @@ class Expense extends Model
     ];
 
     protected $casts = [
-        'amount'       => 'decimal:2',
+        'amount' => 'decimal:2',
         'expense_date' => 'date',
     ];
-
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->logFillable()
             ->logOnlyDirty()
-            ->setDescriptionForEvent(fn(string $eventName) => "Gasto {$eventName}");
+            ->setDescriptionForEvent(fn (string $eventName) => "Gasto {$eventName}");
     }
 
     public function account(): BelongsTo
@@ -50,8 +50,9 @@ class Expense extends Model
         return $this->belongsTo(Account::class, 'payment_account_id');
     }
 
-    public function journalEntry(): MorphOne
+    public function journalEntry(): HasOne
     {
-        return $this->morphOne(JournalEntry::class, 'reference');
+        return $this->hasOne(JournalEntry::class, 'reference_id')
+            ->where('reference_type', 'expense');
     }
 }

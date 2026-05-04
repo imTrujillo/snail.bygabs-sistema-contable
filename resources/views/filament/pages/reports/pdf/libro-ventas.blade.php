@@ -84,7 +84,7 @@
 
 <body>
     <div class="header-info">
-        <h2>LIBRO DE VENTAS A CONSUMIDOR FINAL</h2>
+        <h2>LIBRO DE VENTAS E INGRESOS (FCF Y CCF)</h2>
         <h3>{{ $company->name }}</h3>
         <p>N.R.C.: {{ $company->nrc ?? '—' }} &nbsp;|&nbsp; N.I.T.: {{ $company->nit ?? '—' }}</p>
         <p>Periodo Tributario: {{ $period->name }}</p>
@@ -94,7 +94,9 @@
     <table>
         <thead>
             <tr>
+                <th>Tipo</th>
                 <th>Fecha</th>
+                <th>Cliente</th>
                 <th>Doc. Del</th>
                 <th>Doc. Al</th>
                 <th class="right">V. Exentas</th>
@@ -107,7 +109,9 @@
         <tbody>
             @forelse($documents as $doc)
                 <tr>
+                    <td>{{ $doc->type }}</td>
                     <td>{{ \Carbon\Carbon::parse($doc->issue_date)->format('d/m/Y') }}</td>
+                    <td>{{ $doc->customer?->name ?? '—' }}</td>
                     <td>{{ $doc->document_number }}</td>
                     <td>{{ $doc->document_number }}</td>
                     <td class="right">${{ number_format($doc->exempt_amount, 2) }}</td>
@@ -118,13 +122,13 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" style="text-align:center; color:#999;">Sin documentos en este periodo</td>
+                    <td colspan="10" style="text-align:center; color:#999;">Sin documentos en este periodo</td>
                 </tr>
             @endforelse
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="3">TOTAL</td>
+                <td colspan="5">TOTAL</td>
                 <td class="right">${{ number_format($totals['ventas_exentas'], 2) }}</td>
                 <td class="right">${{ number_format($totals['ventas_no_grav'], 2) }}</td>
                 <td class="right">${{ number_format($totals['ventas_gravadas'], 2) }}</td>

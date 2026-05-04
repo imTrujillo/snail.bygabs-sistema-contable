@@ -31,16 +31,16 @@ class ProductForm
                             ->label('Unidad de medida')
                             ->required()
                             ->options([
-                                'unidad'   => 'Unidad',
-                                'kg'       => 'Kilogramo (kg)',
-                                'g'        => 'Gramo (g)',
-                                'lb'       => 'Libra (lb)',
-                                'l'        => 'Litro (l)',
-                                'ml'       => 'Mililitro (ml)',
-                                'caja'     => 'Caja',
-                                'paquete'  => 'Paquete',
+                                'unidad' => 'Unidad',
+                                'kg' => 'Kilogramo (kg)',
+                                'g' => 'Gramo (g)',
+                                'lb' => 'Libra (lb)',
+                                'l' => 'Litro (l)',
+                                'ml' => 'Mililitro (ml)',
+                                'caja' => 'Caja',
+                                'paquete' => 'Paquete',
                                 'servicio' => 'Servicio',
-                                'hora'     => 'Hora',
+                                'hora' => 'Hora',
                             ])
                             ->searchable()
                             ->columnSpan(1),
@@ -55,12 +55,12 @@ class ProductForm
                             ->prefix('$'),
 
                         TextInput::make('stock')
-                            ->label('Stock actual')
+                            ->label('Stock')
                             ->numeric()
-                            ->readOnly()
                             ->default(0)
+                            ->minValue(0)
                             ->prefixIcon('heroicon-m-archive-box')
-                            ->helperText('Se actualiza automáticamente al registrar compras.')
+                            ->helperText('Stock inicial o ajuste manual; también se actualiza con compras.')
                             ->columnSpan(1),
                     ]),
             ]);

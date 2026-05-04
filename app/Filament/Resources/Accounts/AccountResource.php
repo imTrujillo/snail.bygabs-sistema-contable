@@ -20,11 +20,15 @@ class AccountResource extends Resource
     protected static ?string $model = Account::class;
 
     protected static string|UnitEnum|null $navigationGroup = 'Contabilidad';
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?string $modelLabel = 'Cuenta';
+
     protected static ?string $pluralModelLabel = 'Cuentas';
+
     protected static ?string $navigationLabel = 'Cuentas';
+
     protected static ?string $breadcrumb = 'Cuentas';
 
     protected static ?string $recordTitleAttribute = 'name';
@@ -72,6 +76,10 @@ class AccountResource extends Resource
 
     public static function canDelete($record): bool
     {
-        return Auth::user()?->isAdmin();
+        if (! Auth::user()?->isAdmin()) {
+            return false;
+        }
+
+        return $record->journalLines()->doesntExist();
     }
 }

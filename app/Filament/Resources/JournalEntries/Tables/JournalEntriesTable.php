@@ -25,17 +25,17 @@ class JournalEntriesTable
                     ->label('Descripción')
                     ->searchable()
                     ->limit(50)
-                    ->tooltip(fn($record) => $record->description),
+                    ->tooltip(fn ($record) => $record->description),
 
                 TextColumn::make('journalEntryType.name')
                     ->label('Tipo')
                     ->badge()
-                    ->color(fn(string $state) => match ($state) {
+                    ->color(fn (string $state) => match ($state) {
                         'Apertura' => 'info',
-                        'Diario'   => 'success',
-                        'Ajuste'   => 'warning',
-                        'Cierre'   => 'danger',
-                        default    => 'gray',
+                        'Diario' => 'success',
+                        'Ajuste' => 'warning',
+                        'Cierre' => 'danger',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('fiscalPeriod.name')
@@ -47,21 +47,21 @@ class JournalEntriesTable
                 TextColumn::make('reference_type')
                     ->label('Tipo')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'sale'       => 'success',
-                        'purchase'   => 'warning',
-                        'expense'    => 'danger',
-                        'manual'     => 'gray',
+                    ->color(fn (string $state): string => match ($state) {
+                        'sale' => 'success',
+                        'purchase' => 'warning',
+                        'expense' => 'danger',
+                        'manual' => 'gray',
                         'adjustment' => 'info',
-                        default      => 'gray',
+                        default => 'gray',
                     })
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
-                        'sale'       => 'Venta',
-                        'purchase'   => 'Compra',
-                        'expense'    => 'Gasto',
-                        'manual'     => 'Manual',
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'sale' => 'Venta',
+                        'purchase' => 'Compra',
+                        'expense' => 'Gasto',
+                        'manual' => 'Manual',
                         'adjustment' => 'Ajuste',
-                        default      => $state,
+                        default => $state,
                     }),
 
                 TextColumn::make('reference_id')
@@ -71,14 +71,16 @@ class JournalEntriesTable
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('lines_sum_debit')
-                    ->label('Débito')
+                    ->label('Total débitos')
                     ->sum('lines', 'debit')
-                    ->money('USD'),
+                    ->money('USD')
+                    ->tooltip('Suma de todas las líneas al debe de esta partida. En una partida cuadrada coincide con el total de créditos.'),
 
                 TextColumn::make('lines_sum_credit')
-                    ->label('Crédito')
+                    ->label('Total créditos')
                     ->sum('lines', 'credit')
-                    ->money('USD'),
+                    ->money('USD')
+                    ->tooltip('Suma de todas las líneas al haber. Para ventas: efectivo/banco al debe; ventas e IVA al haber — ambos totales deben ser iguales.'),
 
                 TextColumn::make('user.name')
                     ->label('Registrado por')
@@ -111,10 +113,10 @@ class JournalEntriesTable
                 SelectFilter::make('reference_type')
                     ->label('Tipo de Referencia')
                     ->options([
-                        'sale'       => 'Venta',
-                        'purchase'   => 'Compra',
-                        'expense'    => 'Gasto',
-                        'manual'     => 'Manual',
+                        'sale' => 'Venta',
+                        'purchase' => 'Compra',
+                        'expense' => 'Gasto',
+                        'manual' => 'Manual',
                         'adjustment' => 'Ajuste',
                     ]),
 

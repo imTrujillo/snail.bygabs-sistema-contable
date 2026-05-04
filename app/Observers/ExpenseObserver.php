@@ -8,6 +8,7 @@ use App\Models\FiscalPeriod;
 use App\Models\JournalEntry;
 use App\Models\JournalEntryType;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -16,39 +17,43 @@ class ExpenseObserver
     public function created(Expense $expense): void
     {
         try {
-            $period = FiscalPeriod::find(session('active_fiscal_period_id'));
-            if (!$period || $period->is_closed) {
-                Log::warning('ExpenseObserver: sin período activo o cerrado', ['expense_id' => $expense->id]);
+            $period = $this->resolveFiscalPeriod($expense);
+            if (! $period) {
+                Log::warning('ExpenseObserver: no se pudo resolver período fiscal', ['expense_id' => $expense->id]);
+
                 return;
             }
 
-            if (!$expense->payment_account_id) {
+            if (! $expense->payment_account_id) {
                 Log::warning('ExpenseObserver: sin cuenta de pago', ['expense_id' => $expense->id]);
+
                 return;
             }
 
             $entryType = JournalEntryType::where('name', 'Diario')->first();
-            if (!$entryType) return;
+            if (! $entryType) {
+                return;
+            }
 
             $isCCF = $expense->document_type === 'CCF';
-            $iva   = $isCCF ? ($expense->iva_amount ?? round($expense->amount * 0.13, 2)) : 0;
+            $iva = $isCCF ? ($expense->iva_amount ?? round($expense->amount * 0.13, 2)) : 0;
             $total = $expense->amount + $iva;
 
             $entry = JournalEntry::create([
-                'entry_date'            => $expense->expense_date,
-                'description'           => "Gasto - {$expense->description}",
-                'reference_type'        => 'expense',
-                'reference_id'          => $expense->id,
-                'fiscal_period_id'      => $period->id,
-                'user_id'               => Auth::id(),
+                'entry_date' => $expense->expense_date,
+                'description' => "Gasto - {$expense->description}",
+                'reference_type' => 'expense',
+                'reference_id' => $expense->id,
+                'fiscal_period_id' => $period->id,
+                'user_id' => Auth::id(),
                 'journal_entry_type_id' => $entryType->id,
             ]);
 
             // DÉBITO → cuenta de gasto
             $entry->lines()->create([
-                'account_id'  => $expense->account_id,
-                'debit'       => $expense->amount,
-                'credit'      => 0,
+                'account_id' => $expense->account_id,
+                'debit' => $expense->amount,
+                'credit' => 0,
                 'description' => $expense->description,
             ]);
 
@@ -57,9 +62,9 @@ class ExpenseObserver
                 $ivaAccount = Account::where('code', '1106')->first();
                 if ($ivaAccount) {
                     $entry->lines()->create([
-                        'account_id'  => $ivaAccount->id,
-                        'debit'       => $iva,
-                        'credit'      => 0,
+                        'account_id' => $ivaAccount->id,
+                        'debit' => $iva,
+                        'credit' => 0,
                         'description' => "IVA crédito fiscal - {$expense->description}",
                     ]);
                 }
@@ -67,16 +72,16 @@ class ExpenseObserver
 
             // CRÉDITO → cuenta de pago
             $entry->lines()->create([
-                'account_id'  => $expense->payment_account_id,
-                'debit'       => 0,
-                'credit'      => $total,
-                'description' => "Pago gasto" . ($isCCF ? " CCF - {$expense->supplier_name}" : ''),
+                'account_id' => $expense->payment_account_id,
+                'debit' => 0,
+                'credit' => $total,
+                'description' => 'Pago gasto'.($isCCF ? " CCF - {$expense->supplier_name}" : ''),
             ]);
 
             $recipient = Auth::user();
             if ($recipient) {
                 $body = "**{$expense->description}** por \${$expense->amount}";
-                $body .= $isCCF ? " + IVA \${$iva} (CCF)" : " (FCF)";
+                $body .= $isCCF ? " + IVA \${$iva} (CCF)" : ' (FCF)';
                 $body .= " — Pagado con: *{$expense->paid_with}*.";
 
                 Notification::make()
@@ -86,7 +91,33 @@ class ExpenseObserver
                     ->sendToDatabase($recipient);
             }
         } catch (\Throwable $e) {
-            Log::error('ExpenseObserver error: ' . $e->getMessage());
+            Log::error('ExpenseObserver error: '.$e->getMessage(), [
+                'expense_id' => $expense->id,
+                'exception' => $e,
+            ]);
         }
+    }
+
+    /**
+     * Período en sesión si está abierto; si no, el período abierto que contiene la fecha del gasto.
+     */
+    private function resolveFiscalPeriod(Expense $expense): ?FiscalPeriod
+    {
+        $sessionId = session('active_fiscal_period_id');
+        if ($sessionId) {
+            $p = FiscalPeriod::find($sessionId);
+            if ($p && ! $p->is_closed) {
+                return $p;
+            }
+        }
+
+        $d = Carbon::parse($expense->expense_date);
+
+        return FiscalPeriod::query()
+            ->where('is_closed', false)
+            ->whereDate('start_date', '<=', $d)
+            ->whereDate('end_date', '>=', $d)
+            ->orderBy('start_date')
+            ->first();
     }
 }

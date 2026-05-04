@@ -38,7 +38,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->colors([
                 'primary' => [
-                    50  => '#faf6ee',
+                    50 => '#faf6ee',
                     100 => '#f5efdb',
                     200 => '#ede3c4',
                     300 => '#d9ccaa',
@@ -55,21 +55,23 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(function () {
                 try {
                     $setting = CompanySetting::current();
-                    if ($setting?->logo && file_exists(public_path('storage/' . $setting->logo))) {
-                        return asset('storage/' . $setting->logo);
+                    if ($setting?->logo && file_exists(public_path('storage/'.$setting->logo))) {
+                        return asset('storage/'.$setting->logo);
                     }
                 } catch (\Exception $e) {
                 }
+
                 return asset('/logo.jpeg');
             })
             ->favicon(function () {
                 try {
                     $setting = CompanySetting::current();
-                    if ($setting?->logo && file_exists(public_path('storage/' . $setting->logo))) {
-                        return asset('storage/' . $setting->logo);
+                    if ($setting?->logo && file_exists(public_path('storage/'.$setting->logo))) {
+                        return asset('storage/'.$setting->logo);
                     }
                 } catch (\Exception $e) {
                 }
+
                 return asset('/logo.png');
             })
             ->brandName(function () {
@@ -93,7 +95,7 @@ class AdminPanelProvider extends PanelProvider
                 InvoiceWidget::class,
                 AppointmentWidget::class,
                 SaleWidget::class,
-                CalendarWidget::class
+                CalendarWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -116,14 +118,14 @@ class AdminPanelProvider extends PanelProvider
                 'Fiscal',
                 'Contabilidad',
                 'Reportes',
-                'Configuración'
+                'Configuración',
             ])
             ->plugins([
-                AuthUIEnhancerPlugin::make()
+                AuthUIEnhancerPlugin::make(),
             ])
             ->renderHook(
                 'panels::body.start',
-                fn() => request()->routeIs('filament.admin.auth.login') ? new HtmlString('
+                fn () => request()->routeIs('filament.admin.auth.login') ? new HtmlString('
                     <div id="caracol-branding-left">
                         <img src="/logo.jpeg" alt="Caracol Studio Logo">
                     </div>
@@ -176,13 +178,12 @@ class AdminPanelProvider extends PanelProvider
             )
             ->renderHook(
                 'panels::auth.login.form.before',
-                fn() => new HtmlString('
+                fn () => new HtmlString('
                     <div class="caracol-auth-header">
                         <h1>caracol studio</h1>
                     </div>
                 ')
             )
-            ->viteTheme('resources/css/filament/admin/theme.css')
-        ;
+            ->viteTheme('resources/css/filament/admin/theme.css');
     }
 }

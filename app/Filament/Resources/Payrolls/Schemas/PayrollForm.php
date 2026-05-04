@@ -36,9 +36,9 @@ class PayrollForm
                     Select::make('period_type')
                         ->label('Tipo de período')
                         ->options([
-                            'Semanal'   => 'Semanal',
+                            'Semanal' => 'Semanal',
                             'Quincenal' => 'Quincenal',
-                            'Mensual'   => 'Mensual',
+                            'Mensual' => 'Mensual',
                         ])
                         ->required()
                         ->live(),   // para ajustar salario según frecuencia si se necesita
@@ -71,15 +71,18 @@ class PayrollForm
                                 ->options(Employee::where('is_active', true)->pluck('name', 'id'))
                                 ->required()
                                 ->searchable()
+                                ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                 ->live()
                                 ->afterStateUpdated(function (Set $set, Get $get) {
                                     $employee = Employee::find($get('employee_id'));
-                                    if (!$employee) return;
+                                    if (! $employee) {
+                                        return;
+                                    }
 
                                     $gross = $employee->base_salary;
-                                    $isss  = $employee->isssDeduction();
-                                    $afp   = $employee->afpDeduction();
-                                    $net   = $employee->netSalary();
+                                    $isss = $employee->isssDeduction();
+                                    $afp = $employee->afpDeduction();
+                                    $net = $employee->netSalary();
 
                                     $set('gross_salary', $gross);
                                     $set('isss_deduction', $isss);

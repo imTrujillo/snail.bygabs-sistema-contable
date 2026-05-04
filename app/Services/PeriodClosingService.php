@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Account;
 use App\Models\AccountPeriodBalance;
 use App\Models\FiscalPeriod;
 use App\Models\JournalEntry;
@@ -25,7 +26,7 @@ class PeriodClosingService
             ->get();
 
         foreach ($entries as $entry) {
-            $debit  = round($entry->lines->sum('debit'), 2);
+            $debit = round($entry->lines->sum('debit'), 2);
             $credit = round($entry->lines->sum('credit'), 2);
 
             if ($debit !== $credit) {
@@ -48,22 +49,22 @@ class PeriodClosingService
             $this->remayorizar($period);
 
             // 2. Calcular resultados del período
-            $totalIncome  = $this->sumByType($period, 'Ingreso');
-            $totalCost    = $this->sumByType($period, 'Costo');
+            $totalIncome = $this->sumByType($period, 'Ingreso');
+            $totalCost = $this->sumByType($period, 'Costo');
             $totalExpense = $this->sumByType($period, 'Gasto');
-            $netResult    = $totalIncome - $totalCost - $totalExpense;
+            $netResult = $totalIncome - $totalCost - $totalExpense;
 
             // 3. Registrar partida de cierre (opcional pero trazable)
             $this->crearPartidaCierre($period, $netResult);
 
             // 4. Guardar en period_closings
             $period->update([
-                'is_closed'    => true,
+                'is_closed' => true,
                 'total_income' => $totalIncome,
                 'total_expense' => $totalCost + $totalExpense,
-                'net_result'   => $netResult,
-                'closed_by'    => Auth::id(),
-                'closed_at'    => now(),
+                'net_result' => $netResult,
+                'closed_by' => Auth::id(),
+                'closed_at' => now(),
             ]);
 
             // 5. Marcar período como cerrado
@@ -85,14 +86,14 @@ class PeriodClosingService
         // Reagrupar todas las líneas del período por cuenta
         $lines = JournalEntryLine::whereHas(
             'journalEntry',
-            fn($q) => $q->where('fiscal_period_id', $period->id)
+            fn ($q) => $q->where('fiscal_period_id', $period->id)
         )
             ->selectRaw('account_id, SUM(debit) as total_debit, SUM(credit) as total_credit')
             ->groupBy('account_id')
             ->get();
 
         foreach ($lines as $line) {
-            $account = \App\Models\Account::find($line->account_id);
+            $account = Account::find($line->account_id);
 
             // Tomar saldo de apertura del período anterior si existe
             $prevBalance = $this->getSaldoAnterior($account->id, $period);
@@ -104,12 +105,12 @@ class PeriodClosingService
                 : $prevBalance + $line->total_credit - $line->total_debit;
 
             AccountPeriodBalance::create([
-                'account_id'       => $line->account_id,
+                'account_id' => $line->account_id,
                 'fiscal_period_id' => $period->id,
-                'opening_balance'  => $prevBalance,
-                'total_debit'      => $line->total_debit,
-                'total_credit'     => $line->total_credit,
-                'closing_balance'  => $closing,
+                'opening_balance' => $prevBalance,
+                'total_debit' => $line->total_debit,
+                'total_credit' => $line->total_credit,
+                'closing_balance' => $closing,
             ]);
         }
     }
@@ -122,7 +123,9 @@ class PeriodClosingService
             ->orderByDesc('end_date')
             ->first();
 
-        if (!$prev) return 0;
+        if (! $prev) {
+            return 0;
+        }
 
         return AccountPeriodBalance::where('account_id', $accountId)
             ->where('fiscal_period_id', $prev->id)
@@ -132,30 +135,34 @@ class PeriodClosingService
     /** Suma movimientos netos de un tipo de cuenta en el período */
     private function sumByType(FiscalPeriod $period, string $type): float
     {
-        return JournalEntryLine::whereHas('journalEntry', fn($q) =>
-        $q->where('fiscal_period_id', $period->id))
-            ->whereHas('account', fn($q) =>
-            $q->where('type', $type)->where('is_group', false))
-            ->selectRaw('SUM(debit) - SUM(credit) as total')
-            ->value('total') ?? 0;
+        $query = JournalEntryLine::whereHas('journalEntry', fn ($q) => $q->where('fiscal_period_id', $period->id))
+            ->whereHas('account', fn ($q) => $q->where('type', $type)->where('is_group', false));
+
+        if ($type === 'Ingreso') {
+            return (float) ($query->clone()->selectRaw('SUM(credit) - SUM(debit) as total')->value('total') ?? 0);
+        }
+
+        return (float) ($query->clone()->selectRaw('SUM(debit) - SUM(credit) as total')->value('total') ?? 0);
     }
 
     /** Crea partida contable de cierre para trazabilidad */
     private function crearPartidaCierre(FiscalPeriod $period, float $netResult): void
     {
         $tipoAjuste = JournalEntryType::where('name', 'Cierre')->first();
-        if (!$tipoAjuste) return;
+        if (! $tipoAjuste) {
+            return;
+        }
 
         // Solo registramos la partida si hay resultado
         // (en un sistema real aquí irían los asientos de cierre de cuentas nominales)
         JournalEntry::create([
-            'entry_date'           => $period->end_date,
-            'description'          => "Cierre del período: {$period->name}",
-            'fiscal_period_id'     => $period->id,
-            'user_id'              => Auth::id(),
+            'entry_date' => $period->end_date,
+            'description' => "Cierre del período: {$period->name}",
+            'fiscal_period_id' => $period->id,
+            'user_id' => Auth::id(),
             'journal_entry_type_id' => $tipoAjuste->id,
-            'reference_id'         => $period->id,
-            'reference_type'       => 'adjustment',
+            'reference_id' => $period->id,
+            'reference_type' => 'adjustment',
         ]);
         // Las líneas detalladas de cierre las puedes agregar aquí
         // según tu catálogo de cuentas específico
@@ -168,24 +175,28 @@ class PeriodClosingService
             ->orderBy('start_date')
             ->first();
 
-        if (!$nextPeriod) return;
+        if (! $nextPeriod) {
+            return;
+        }
 
         $balances = AccountPeriodBalance::where('fiscal_period_id', $closedPeriod->id)->get();
 
         foreach ($balances as $balance) {
             // Solo trasladar cuentas de balance (Activo, Pasivo, Patrimonio)
-            $account = \App\Models\Account::find($balance->account_id);
-            if (!in_array($account->type, ['Activo', 'Pasivo', 'Patrimonio'])) continue;
+            $account = Account::find($balance->account_id);
+            if (! in_array($account->type, ['Activo', 'Pasivo', 'Patrimonio'])) {
+                continue;
+            }
 
             AccountPeriodBalance::updateOrCreate(
                 [
-                    'account_id'       => $balance->account_id,
+                    'account_id' => $balance->account_id,
                     'fiscal_period_id' => $nextPeriod->id,
                 ],
                 [
                     'opening_balance' => $balance->closing_balance,
-                    'total_debit'     => 0,
-                    'total_credit'    => 0,
+                    'total_debit' => 0,
+                    'total_credit' => 0,
                     'closing_balance' => $balance->closing_balance,
                 ]
             );

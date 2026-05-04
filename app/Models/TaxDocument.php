@@ -15,7 +15,7 @@ class TaxDocument extends Model
         'correlative_number',
         'document_number',
         'issue_date',
-        'client_id',
+        'customer_id',
         'supplier_id',
         'reference_id',
         'reference_type',
@@ -29,14 +29,14 @@ class TaxDocument extends Model
     ];
 
     protected $casts = [
-        'issue_date'         => 'date',
-        'voided_at'          => 'datetime',
-        'is_voided'          => 'boolean',
-        'exempt_amount'      => 'decimal:2',
+        'issue_date' => 'date',
+        'voided_at' => 'datetime',
+        'is_voided' => 'boolean',
+        'exempt_amount' => 'decimal:2',
         'non_taxable_amount' => 'decimal:2',
-        'taxable_amount'     => 'decimal:2',
-        'iva_amount'         => 'decimal:2',
-        'total_amount'       => 'decimal:2',
+        'taxable_amount' => 'decimal:2',
+        'iva_amount' => 'decimal:2',
+        'total_amount' => 'decimal:2',
     ];
 
     public function customer(): BelongsTo
