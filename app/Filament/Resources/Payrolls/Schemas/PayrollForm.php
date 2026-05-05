@@ -9,6 +9,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -69,9 +70,108 @@ class PayrollForm
                         ->schema([
                             Select::make('employee_id')
                                 ->label('Empleado')
-                                ->options(Employee::where('is_active', true)->pluck('name', 'id'))
+                                ->relationship(
+                                    name: 'employee',
+                                    titleAttribute: 'name',
+                                    modifyQueryUsing: fn ($query) => $query->where('is_active', true),
+                                )
                                 ->required()
                                 ->searchable()
+                                ->preload()
+                                ->createOptionModalHeading('Nuevo empleado')
+                                ->createOptionForm([
+                                    TextInput::make('name')
+                                        ->label('Nombre completo')
+                                        ->required()
+                                        ->minLength(3)
+                                        ->maxLength(100)
+                                        ->columnSpanFull(),
+
+                                    TextInput::make('position')
+                                        ->label('Cargo')
+                                        ->minLength(2)
+                                        ->maxLength(100)
+                                        ->placeholder('Ej: Cajero, Técnico, Vendedor')
+                                        ->columnSpan(1),
+
+                                    TextInput::make('dui')
+                                        ->label('DUI')
+                                        ->unique(table: 'employees', column: 'dui', ignoreRecord: true)
+                                        ->regex('/^\d{8}-\d$/')
+                                        ->helperText('Formato: 00000000-0')
+                                        ->placeholder('00000000-0')
+                                        ->maxLength(10)
+                                        ->columnSpan(1),
+
+                                    Toggle::make('is_active')
+                                        ->label('Activo')
+                                        ->default(true)
+                                        ->columnSpanFull(),
+
+                                    TextInput::make('isss')
+                                        ->label('ISSS')
+                                        ->unique(table: 'employees', column: 'isss', ignoreRecord: true)
+                                        ->maxLength(20)
+                                        ->placeholder('Número de afiliación ISSS'),
+
+                                    TextInput::make('afp')
+                                        ->label('AFP')
+                                        ->unique(table: 'employees', column: 'afp', ignoreRecord: true)
+                                        ->maxLength(20)
+                                        ->placeholder('Número de afiliación AFP'),
+
+                                    TextInput::make('base_salary')
+                                        ->label('Salario base')
+                                        ->numeric()
+                                        ->prefix('$')
+                                        ->required()
+                                        ->live(onBlur: true)
+                                        ->step(0.01)
+                                        ->minValue(fn (Get $get): float => (($get('pay_frequency') ?? 'Mensual') === 'Mensual') ? 365.00 : 0.01)
+                                        ->maxValue(99999.99)
+                                        ->helperText(fn (Get $get) => (($get('pay_frequency') ?? 'Mensual') === 'Mensual')
+                                            ? 'Salario mínimo nacional (mensual): $365.'
+                                            : 'Registre la remuneración correspondiente al período de pago seleccionado.')
+                                        ->columnSpan(1),
+
+                                    Select::make('pay_frequency')
+                                        ->label('Frecuencia de pago')
+                                        ->options([
+                                            'Semanal' => 'Semanal',
+                                            'Quincenal' => 'Quincenal',
+                                            'Mensual' => 'Mensual',
+                                        ])
+                                        ->required()
+                                        ->default('Mensual')
+                                        ->live()
+                                        ->columnSpan(1),
+
+                                    Select::make('payment_method')
+                                        ->label('Método de pago')
+                                        ->options([
+                                            'Efectivo' => 'Efectivo',
+                                            'Transferencia' => 'Transferencia',
+                                        ])
+                                        ->required()
+                                        ->default('Efectivo')
+                                        ->live()
+                                        ->columnSpan(1),
+
+                                    TextInput::make('bank_name')
+                                        ->label('Banco')
+                                        ->placeholder('Ej: Banco Agrícola, Davivienda...')
+                                        ->maxLength(100)
+                                        ->visible(fn (Get $get) => $get('payment_method') === 'Transferencia')
+                                        ->required(fn (Get $get) => $get('payment_method') === 'Transferencia'),
+
+                                    TextInput::make('bank_account')
+                                        ->label('Número de cuenta')
+                                        ->placeholder('Número de cuenta bancaria')
+                                        ->minLength(10)
+                                        ->maxLength(30)
+                                        ->visible(fn (Get $get) => $get('payment_method') === 'Transferencia')
+                                        ->required(fn (Get $get) => $get('payment_method') === 'Transferencia'),
+                                ])
                                 ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                 ->live()
                                 ->afterStateUpdated(function (Set $set, Get $get) {

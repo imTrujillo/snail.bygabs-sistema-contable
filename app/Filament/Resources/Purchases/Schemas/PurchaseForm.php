@@ -36,6 +36,45 @@ class PurchaseForm
                             ->required()
                             ->preload()
                             ->prefixIcon('heroicon-m-building-storefront')
+                            ->createOptionModalHeading('Nuevo proveedor')
+                            ->createOptionForm([
+                                TextInput::make('name')
+                                    ->label('Nombre / Razón social')
+                                    ->required()
+                                    ->minLength(3)
+                                    ->maxLength(255)
+                                    ->columnSpanFull(),
+
+                                TextInput::make('nrc')
+                                    ->label('NRC')
+                                    ->required()
+                                    ->unique(table: 'suppliers', column: 'nrc', ignoreRecord: true)
+                                    ->regex('/^\d{1,6}-\d$/')
+                                    ->helperText('Formato: 123456-7')
+                                    ->maxLength(20),
+
+                                TextInput::make('nit')
+                                    ->label('NIT')
+                                    ->unique(table: 'suppliers', column: 'nit', ignoreRecord: true)
+                                    ->regex('/^\d{4}-\d{6}-\d{3}-\d$/')
+                                    ->helperText('Formato: 0614-123456-001-0')
+                                    ->maxLength(20),
+
+                                TextInput::make('phone')
+                                    ->label('Teléfono')
+                                    ->required()
+                                    ->tel()
+                                    ->regex('/^[67]\d{7}$/')
+                                    ->maxLength(8)
+                                    ->helperText('Ej: 71234567'),
+
+                                TextInput::make('email')
+                                    ->label('Correo electrónico')
+                                    ->email()
+                                    ->required()
+                                    ->unique(table: 'suppliers', column: 'email', ignoreRecord: true)
+                                    ->maxLength(255),
+                            ])
                             ->columnSpanFull(),
 
                         DatePicker::make('purchase_date')
@@ -106,9 +145,56 @@ class PurchaseForm
                             ->schema([
                                 Select::make('product_id')
                                     ->label('Insumo')
-                                    ->options(Product::orderBy('name')->pluck('name', 'id'))
+                                    ->relationship('product', 'name')
                                     ->searchable()
+                                    ->preload()
                                     ->nullable()
+                                    ->createOptionModalHeading('Nuevo insumo')
+                                    ->createOptionForm([
+                                        TextInput::make('name')
+                                            ->label('Nombre')
+                                            ->required()
+                                            ->minLength(3)
+                                            ->maxLength(255)
+                                            ->unique(table: 'products', column: 'name', ignoreRecord: true)
+                                            ->columnSpanFull(),
+
+                                        Select::make('unit')
+                                            ->label('Unidad de medida')
+                                            ->required()
+                                            ->options([
+                                                'unidad' => 'Unidad',
+                                                'kg' => 'Kilogramo (kg)',
+                                                'g' => 'Gramo (g)',
+                                                'lb' => 'Libra (lb)',
+                                                'l' => 'Litro (l)',
+                                                'ml' => 'Mililitro (ml)',
+                                                'caja' => 'Caja',
+                                                'paquete' => 'Paquete',
+                                                'servicio' => 'Servicio',
+                                                'hora' => 'Hora',
+                                            ])
+                                            ->searchable()
+                                            ->columnSpan(1),
+
+                                        TextInput::make('cost_price')
+                                            ->label('Precio de costo')
+                                            ->required()
+                                            ->numeric()
+                                            ->minValue(0.01)
+                                            ->maxValue(99999.99)
+                                            ->step(0.01)
+                                            ->prefix('$'),
+
+                                        TextInput::make('stock')
+                                            ->label('Stock')
+                                            ->numeric()
+                                            ->default(0)
+                                            ->minValue(0)
+                                            ->prefixIcon('heroicon-m-archive-box')
+                                            ->helperText('Stock inicial; también se actualiza con compras.')
+                                            ->columnSpan(1),
+                                    ])
                                     ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                     ->live()
                                     ->afterStateUpdated(function ($state, $set, $get) {
