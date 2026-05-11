@@ -20,25 +20,25 @@ class UserSeeder extends Seeder
 
         User::create([
             'name' => 'Administrador',
-            'email' => 'admin@gmail.com',
+            'email' => 'admin@caracolstudio.com',
             'password' => bcrypt('password'),
             'role_id' => 1
         ]);
         User::create([
             'name' => 'Contador',
-            'email' => 'contador@gmail.com',
+            'email' => 'contador@caracolstudio.com',
             'password' => bcrypt('password'),
             'role_id' => 2
         ]);
         User::create([
             'name' => 'Auxiliar',
-            'email' => 'auxiliar@gmail.com',
+            'email' => 'auxiliar@caracolstudio.com',
             'password' => bcrypt('password'),
             'role_id' => 3
         ]);
         User::create([
             'name' => 'Empleado',
-            'email' => 'empleado@gmail.com',
+            'email' => 'empleado@caracolstudio.com',
             'password' => bcrypt('password'),
             'role_id' => 4
         ]);
