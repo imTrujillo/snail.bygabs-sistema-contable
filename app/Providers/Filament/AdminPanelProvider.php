@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\RequestPasswordLink;
+use App\Filament\Pages\EditMyProfile;
 use App\Filament\Pages\SelectFiscalPeriod;
 use App\Filament\Widgets\AppointmentWidget;
 use App\Filament\Widgets\CalendarWidget;
@@ -11,6 +13,8 @@ use App\Filament\Widgets\StatsOverviewWidget;
 use App\Http\Middleware\EnsureActiveFiscalPeriod;
 use App\Models\CompanySetting;
 use DiogoGPinto\AuthUIEnhancer\AuthUIEnhancerPlugin;
+use Filament\Actions\Action;
+use Filament\Facades\Filament as FilamentFacade;
 use Filament\FontProviders\GoogleFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -19,11 +23,14 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -36,6 +43,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->passwordReset(RequestPasswordLink::class)
             ->colors([
                 'primary' => [
                     50 => '#faf6ee',
@@ -61,7 +69,7 @@ class AdminPanelProvider extends PanelProvider
                 } catch (\Exception $e) {
                 }
 
-                return asset('/logo.jpeg');
+                return asset('/brand-logo.png');
             })
             ->favicon(function () {
                 try {
@@ -83,6 +91,12 @@ class AdminPanelProvider extends PanelProvider
             })
             ->brandLogoHeight('3rem')
             ->darkMode(false)
+            ->profile(EditMyProfile::class, isSimple: false)
+            ->userMenuItems([
+                'profile' => fn (Action $action): Action => $action
+                    ->label('Mi perfil')
+                    ->icon('heroicon-o-user-circle'),
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -127,7 +141,7 @@ class AdminPanelProvider extends PanelProvider
                 'panels::body.start',
                 fn () => request()->routeIs('filament.admin.auth.login') ? new HtmlString('
                     <div id="caracol-branding-left">
-                        <img src="/logo.jpeg" alt="Caracol Studio Logo">
+                        <img src="/brand-logo.png" alt="Caracol Studio Logo">
                     </div>
                     <style>
                         /* Ocultar logos por defecto de Laravel en Login */
@@ -168,7 +182,7 @@ class AdminPanelProvider extends PanelProvider
                         .caracol-auth-header h1 {
                             font-family: "Cinzel", serif;
                             font-size: 3rem;
-                            color: #473919;
+                            color: #565048;
                             font-weight: bold;
                             text-transform: lowercase;
                             letter-spacing: 2px;
@@ -183,6 +197,17 @@ class AdminPanelProvider extends PanelProvider
                         <h1>caracol studio</h1>
                     </div>
                 ')
+            )
+           
+            ->renderHook(
+                PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+                function (): Htmlable {
+                    if (! Auth::guard('web')->check()) {
+                        return new HtmlString('');
+                    }
+
+                    return view('filament.hooks.active-fiscal-period-topbar');
+                },
             )
             ->viteTheme('resources/css/filament/admin/theme.css');
     }

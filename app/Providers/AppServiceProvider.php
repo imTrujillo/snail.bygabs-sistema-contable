@@ -14,9 +14,7 @@ use App\Models\Service;
 use App\Models\Supplier;
 use App\Models\TaxDocument;
 use App\Models\User;
-use Filament\Forms\Components\Field;
-use Filament\Tables\Columns\Column;
-use Filament\Tables\Filters\BaseFilter;
+use App\Notifications\SyncFilamentResetPassword;
 use App\Observers\AppointmentObserver;
 use App\Observers\CustomerObserver;
 use App\Observers\ExpenseObserver;
@@ -29,6 +27,10 @@ use App\Observers\ServiceObserver;
 use App\Observers\SupplierObserver;
 use App\Observers\TaxDocumentObserver;
 use App\Observers\UserObserver;
+use Filament\Auth\Notifications\ResetPassword as FilamentResetPasswordNotification;
+use Filament\Forms\Components\Field;
+use Filament\Tables\Columns\Column;
+use Filament\Tables\Filters\BaseFilter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -38,7 +40,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Filament queuea el reset por defecto; sin `queue:work` nunca llega a Mailtrap.
+        $this->app->bind(FilamentResetPasswordNotification::class, SyncFilamentResetPassword::class);
     }
 
     /**

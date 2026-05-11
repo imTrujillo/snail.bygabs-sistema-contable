@@ -3,24 +3,21 @@
 namespace App\Filament\Pages;
 
 use App\Models\FiscalPeriod;
-use Filament\Pages\Page;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
+use Filament\Pages\Page;
+use Illuminate\Support\Collection;
 
-class SelectFiscalPeriod extends Page implements HasForms
+class SelectFiscalPeriod extends Page
 {
-    use InteractsWithForms;
-
     protected static ?string $slug = 'select-fiscal-period';
+
     protected static bool $shouldRegisterNavigation = false;
-    protected static ?string $title = 'Seleccionar Período';
+
+    protected static ?string $title = 'Seleccionar Período Fiscal';
 
     protected string $view = 'filament.pages.select-fiscal-period';
 
-    public array $data = [];
+    public ?int $selectedPeriodId = null;
 
     public static function canAccess(): bool
     {
@@ -29,36 +26,49 @@ class SelectFiscalPeriod extends Page implements HasForms
 
     public function mount(): void
     {
-        $this->form->fill();
+        $this->selectedPeriodId = session('active_fiscal_period_id');
     }
 
-    public function form(Schema $form): Schema
+    public function getPeriods(): Collection
     {
-        return $form
-            ->statePath('data')
-            ->schema([
-                Select::make('fiscal_period_id')
-                    ->label('Período de trabajo')
-                    ->options(
-                        FiscalPeriod::where('is_closed', false)
-                            ->orderByDesc('start_date')
-                            ->pluck('name', 'id')
-                    )
-                    ->required()
-                    ->searchable()
-                    ->placeholder('Selecciona el mes a trabajar'),
-            ]);
+        return FiscalPeriod::orderByDesc('start_date')->get();
     }
 
-    public function select(): void
+    public function getActivePeriod(): ?FiscalPeriod
     {
-        $data = $this->form->getState();
-        $period = FiscalPeriod::find($data['fiscal_period_id']);
+        $id = session('active_fiscal_period_id');
 
-        session(['active_fiscal_period_id' => $data['fiscal_period_id']]);
+        return $id ? FiscalPeriod::find($id) : null;
+    }
+
+    public function selectPeriod(int $periodId): void
+    {
+        $period = FiscalPeriod::find($periodId);
+
+        if (! $period) {
+            Notification::make()
+                ->title('Período no encontrado')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        if ($period->is_closed) {
+            Notification::make()
+                ->title('Período cerrado')
+                ->body('No puedes trabajar en un período cerrado.')
+                ->warning()
+                ->send();
+
+            return;
+        }
+
+        session(['active_fiscal_period_id' => $period->id]);
 
         Notification::make()
             ->title("Período activo: {$period->name}")
+            ->body("Trabajando en {$period->start_date->locale('es')->isoFormat('MMMM YYYY')}")
             ->success()
             ->send();
 
