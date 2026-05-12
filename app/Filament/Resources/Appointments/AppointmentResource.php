@@ -6,6 +6,7 @@ use App\Filament\Resources\Appointments\Pages\CreateAppointment;
 use App\Filament\Resources\Appointments\Pages\EditAppointment;
 use App\Filament\Resources\Appointments\Pages\ListAppointments;
 use App\Filament\Resources\Appointments\Schemas\AppointmentForm;
+use App\Filament\Resources\Appointments\Schemas\AppointmentInfolist;
 use App\Filament\Resources\Appointments\Tables\AppointmentsTable;
 use App\Models\Appointment;
 use App\Models\AppointmentStatus;
@@ -37,6 +38,11 @@ class AppointmentResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return AppointmentForm::configure($schema);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return AppointmentInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
